@@ -2,6 +2,8 @@
 
 Base URL: `http://localhost:3000`
 
+> Documentación interactiva (Swagger UI) disponible en `http://localhost:3000/api-docs`, generada a partir de los schemas `zod` (ver `docs/specs/swagger-integration.md`).
+
 ---
 
 ## Assets
