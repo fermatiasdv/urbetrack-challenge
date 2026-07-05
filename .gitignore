@@ -7,6 +7,7 @@ node_modules/
 api/dist/
 client/dist/
 **/*.tsbuildinfo
+client/.tsbuild-node/
 
 # Tests
 coverage/

@@ -1,4 +1,9 @@
-import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable
+} from '@tanstack/react-table'
 import { Skeleton } from '@radix-ui/themes'
 import { useVehiclesStore } from './useVehiclesStore'
 import { useVehiclesQuery } from './useVehiclesQuery'
