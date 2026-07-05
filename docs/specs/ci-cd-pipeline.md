@@ -213,3 +213,11 @@ No se validó en esta iteración la parte de GitHub (Branch Protection, `validat
   ser repo de un solo contribuidor y GitHub no permitir auto-aprobación de PRs propios. Ver
   "Nota sobre aprobaciones" en la sección correspondiente. Pendiente que el usuario lo cree en
   GitHub (Rulesets, no Branch protection classic) siguiendo esa sección.
+- ⏳ **Pendiente: activar "Require status checks to pass before merging" en el ruleset.** Al crear
+  el ruleset, GitHub rechazó guardarlo con ese check tildado y la lista de status checks vacía
+  (`Required status checks cannot be empty`) — `validate-branch-name`/`ci` todavía no aparecían
+  como sugerencias porque el workflow no había corrido en el repo. Se guardó el ruleset sin esa
+  regla (resto de las reglas sí activas: PR obligatorio, block force pushes, restrict deletions).
+  Falta volver a editarlo y tildar "Require status checks to pass before merging" agregando
+  `validate-branch-name` y `ci` (más "Require branches to be up to date before merging"), una vez
+  que el workflow haya corrido al menos una vez en el repo.
