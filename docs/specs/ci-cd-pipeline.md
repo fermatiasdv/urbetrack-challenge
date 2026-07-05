@@ -11,7 +11,7 @@ Configurar CI/CD para el proyecto de forma que:
 1. Quede prohibido el trabajo directo sobre `main`.
 2. Todo cambio se realice en una rama con prefijo `feat/`, `fix/`, `chore/`, `docs/`, `test/` o `refactor/`.
 3. El nombre de la rama se valide automáticamente en CI.
-4. Todo merge a `main` se realice mediante Pull Request, con al menos una aprobación y checks obligatorios en verde.
+4. Todo merge a `main` se realice mediante Pull Request, con checks obligatorios en verde (ver nota sobre aprobaciones en la sección "Pull Request obligatorio + Branch Protection sobre `main`").
 5. El pipeline de CI ejecute lint, formato, tipado, tests, cobertura (mínimo 80% en statements/functions/branches/lines) y build; si cualquier etapa falla, el pipeline se cancela y el merge queda bloqueado.
 
 **Nota de alcance:** la descripción original menciona "CI/CD", pero el detalle provisto (pipeline, cobertura, branch protection) es exclusivamente de **CI** (validación previa al merge). No se define ningún paso de despliegue (CD real: build de artefacto de release, publish, deploy a un ambiente). Este spec cubre únicamente CI + protección de rama; si se requiere CD, debe ser objeto de un spec separado (ver [Fuera de alcance](#fuera-de-alcance)).
@@ -117,31 +117,48 @@ Con `thresholds` configurado, `vitest run --coverage` termina con exit code ≠ 
 
 ## Pull Request obligatorio + Branch Protection sobre `main`
 
-Configuración a aplicar manualmente en GitHub (Settings → Branches → Branch protection rules → `main`), o vía `gh api`:
+Configuración a aplicar manualmente en GitHub. Se usa **Rulesets** (Settings → Rules → Rulesets →
+New branch ruleset), no la clásica "Branch protection rules" — es la interfaz vigente de GitHub
+para este tipo de reglas.
 
-- **Require a pull request before merging** — activado, con **1 aprobación mínima**.
-- **Require status checks to pass before merging** — activado, seleccionando como checks requeridos: `validate-branch-name` y `ci` (nombres de los jobs del workflow).
-- **Require branches to be up to date before merging** — activado (evita mergear un PR desactualizado respecto a `main`).
-- **Do not allow bypassing the above settings** — activado (incluye administradores, para que la regla sea real y no sólo para contribuidores externos).
-- **Block force pushes** y **Restrict deletions** — activados.
-- Push directo a `main` queda bloqueado por la combinación de "require PR" + "no bypass".
+- **Ruleset name:** cualquier nombre descriptivo (ej. `main-protection`).
+- **Enforcement status:** `Active` (si queda en `Disabled` el ruleset no bloquea nada).
+- **Bypass list:** vacía. Nadie (ni admins) puede saltearse las reglas — ver excepción de
+  aprobaciones más abajo, que es un tema aparte de bypass.
+- **Target branches:** `Add target` → `Include default branch` (cubre `main`).
+- **Branch rules:**
+  - **Require a pull request before merging** — activado, con **Required approvals: 0**
+    (ver "Nota sobre aprobaciones" abajo).
+  - **Require status checks to pass before merging** — activado, agregando como checks
+    requeridos `validate-branch-name` y `ci` (nombres de los jobs del workflow; sólo aparecen en
+    el buscador una vez que el workflow corrió al menos una vez). Tildar también **Require
+    branches to be up to date before merging**.
+  - **Block force pushes** — activado.
+  - **Restrict deletions** — activado.
+  - El resto de las reglas disponibles (Restrict creations/updates, Require linear history,
+    Require signed commits, code scanning/quality, restricciones de archivos) no se usan — no
+    están pedidas por el objetivo de este spec.
 
-Comando de referencia (`gh` CLI, ejecutado por quien tenga permisos de admin del repo):
+Con esta configuración, push directo a `main` queda bloqueado (todo cambio requiere PR), y el PR
+no puede mergearse si `validate-branch-name` o `ci` fallan.
 
-```bash
-gh api -X PUT repos/{owner}/{repo}/branches/main/protection \
-  -H "Accept: application/vnd.github+json" \
-  -f required_status_checks[strict]=true \
-  -f "required_status_checks[contexts][]=validate-branch-name" \
-  -f "required_status_checks[contexts][]=ci" \
-  -f enforce_admins=true \
-  -f required_pull_request_reviews[required_approving_review_count]=1 \
-  -f restrictions=null \
-  -f allow_force_pushes=false \
-  -f allow_deletions=false
-```
+### Nota sobre aprobaciones (0 en vez de 1)
 
-Esta parte no es código versionable en el repo (es configuración de GitHub), por lo que la "implementación" de esta sección es un paso manual/operativo a ejecutar después de mergear el workflow, no un cambio de archivo.
+El objetivo original pedía "al menos una aprobación". En la práctica, **GitHub no permite que el
+autor de un PR apruebe su propio PR**, ni siquiera siendo owner/admin del repo. Con un solo
+contribuidor (caso actual de este proyecto), exigir 1 aprobación deja todos los PRs
+imposibles de mergear — ningún PR propio podría juntar esa aprobación.
+
+Se evaluaron dos alternativas:
+
+- **(A, elegida) Required approvals: 0.** Se sigue exigiendo PR + checks en verde, pero no una
+  aprobación externa que hoy no existe. Simple, y correcta para un repo de un solo contribuidor.
+- **(B, descartada por ahora) Required approvals: 1 + el propio usuario en el Bypass list** (modo
+  "For pull requests only"). Mantendría el requisito de aprobación para futuros colaboradores
+  que no estén en el bypass, a costa de un ruleset más difícil de razonar hoy sin necesidad.
+
+Si en el futuro se suman colaboradores, esto debería revisarse (subir a 1 aprobación real, ya que
+en ese caso sí hay quién pueda aprobar el PR de otra persona).
 
 ## Opcional (a confirmar si se incluye en esta iteración)
 
@@ -154,7 +171,7 @@ Esta parte no es código versionable en el repo (es configuración de GitHub), p
 2. `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, `pnpm coverage`, `pnpm build` corren en verde localmente.
 3. Push a una rama con nombre inválido (ej. `random-branch`) → falla `validate-branch-name`.
 4. Push/PR desde `feat/algo` → `validate-branch-name` pasa.
-5. PR sin aprobaciones → botón de merge deshabilitado en GitHub.
+5. PR con `validate-branch-name` o `ci` en rojo → botón de merge deshabilitado en GitHub.
 6. Intento de push directo a `main` → rechazado por GitHub.
 7. Bajar deliberadamente la cobertura de un archivo por debajo del 80% → `pnpm coverage` falla y el check `ci` queda en rojo, bloqueando el merge.
 
@@ -191,3 +208,16 @@ Se corrieron los 6 comandos del pipeline (`lint`, `format:check`, `typecheck`, `
 | `pnpm build` | ✅ build de Vite generado en `client/dist` |
 
 No se validó en esta iteración la parte de GitHub (Branch Protection, `validate-branch-name` corriendo en un PR real) porque requiere el repo empujado a GitHub y permisos de admin — queda pendiente como paso operativo del usuario, documentado en la sección correspondiente de este spec.
+
+- ✅ **Ruleset sobre `main`** — decidido y documentado: `Required approvals: 0` (en vez de 1), por
+  ser repo de un solo contribuidor y GitHub no permitir auto-aprobación de PRs propios. Ver
+  "Nota sobre aprobaciones" en la sección correspondiente. Pendiente que el usuario lo cree en
+  GitHub (Rulesets, no Branch protection classic) siguiendo esa sección.
+- ⏳ **Pendiente: activar "Require status checks to pass before merging" en el ruleset.** Al crear
+  el ruleset, GitHub rechazó guardarlo con ese check tildado y la lista de status checks vacía
+  (`Required status checks cannot be empty`) — `validate-branch-name`/`ci` todavía no aparecían
+  como sugerencias porque el workflow no había corrido en el repo. Se guardó el ruleset sin esa
+  regla (resto de las reglas sí activas: PR obligatorio, block force pushes, restrict deletions).
+  Falta volver a editarlo y tildar "Require status checks to pass before merging" agregando
+  `validate-branch-name` y `ci` (más "Require branches to be up to date before merging"), una vez
+  que el workflow haya corrido al menos una vez en el repo.
