@@ -1,0 +1,20 @@
+{
+  "name": "urbetrack-desafio",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev:api": "pnpm --filter urban-hygiene-api dev",
+    "dev:client": "pnpm --filter client dev",
+    "build:api": "pnpm --filter urban-hygiene-api build",
+    "build:client": "pnpm --filter client build",
+    "test:client": "pnpm --filter client test",
+    "lint:client": "pnpm --filter client lint",
+    "lint": "pnpm --filter client lint",
+    "format:check": "pnpm --filter client format:check",
+    "typecheck": "pnpm --filter client typecheck",
+    "test": "pnpm --filter client test",
+    "coverage": "pnpm --filter client coverage",
+    "build": "pnpm --filter client build"
+  }
+}
