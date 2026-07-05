@@ -1,1 +1,34 @@
+# Dependencias
 node_modules/
+**/node_modules/
+.pnpm-store/
+
+# Builds
+api/dist/
+client/dist/
+**/*.tsbuildinfo
+
+# Tests
+coverage/
+
+# Logs de pnpm
+pnpm-debug.log*
+
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Artefactos de compresion (zip de macOS)
+__MACOSX/
+
+# Temporales
+_tmp_*
