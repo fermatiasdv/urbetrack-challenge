@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches-ignore: [main]
+
+env:
+  PNPM_VERSION: 9.15.9
+  NODE_VERSION: 22
+
+jobs:
+  validate-branch-name:
+    name: Validar nombre de rama
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validar convención feat|fix|chore|docs|test|refactor
+        run: |
+          BRANCH_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          echo "Rama: $BRANCH_NAME"
+          if [[ ! "$BRANCH_NAME" =~ ^(feat|fix|chore|docs|test|refactor)/[a-z0-9._-]+$ ]]; then
+            echo "::error::Nombre de rama inválido: '$BRANCH_NAME'. Debe usar el prefijo feat/, fix/, chore/, docs/, test/ o refactor/ seguido de un slug en minúsculas."
+            exit 1
+          fi
+
+  ci:
+    name: Lint, format, typecheck, test, coverage y build (client)
+    needs: validate-branch-name
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Formato (Prettier)
+        run: pnpm format:check
+
+      - name: Tipado (TypeScript)
+        run: pnpm typecheck
+
+      - name: Tests
+        run: pnpm test
+
+      - name: Cobertura (mínimo 80% statements/branches/functions/lines)
+        run: pnpm coverage
+
+      - name: Build
+        run: pnpm build
