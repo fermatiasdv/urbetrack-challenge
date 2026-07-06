@@ -26,6 +26,26 @@ export interface Zone {
 }
 
 /**
+ * Rectangular geographic boundary, expressed as inclusive lat/lng limits.
+ * See docs/specs/geo-zone-derivation.md (MAP-00).
+ */
+export interface BoundingBox {
+  minLat: number
+  maxLat: number
+  minLng: number
+  maxLng: number
+}
+
+/**
+ * The 5 zones geographically supported by the system. Distinct from `Zone`
+ * (the backend resource `{ id, name }`): a point's real-world zone is derived
+ * exclusively from its coordinates against `shared/geo/zones.ts`, never from
+ * the backend's `zoneId` (docs/verified-scope.md §10.5,
+ * docs/specs/geo-zone-derivation.md).
+ */
+export type SupportedZone = 'MICROCENTRO' | 'PALERMO' | 'RECOLETA' | 'BELGRANO' | 'CABALLITO'
+
+/**
  * Asset domain types (client-side), mirrored from the mock backend
  * (`api/src/schemas/asset.schema.ts`). See docs/verified-scope.md §2.3 and
  * docs/feature/07-assets-page.md.
