@@ -21,6 +21,20 @@ const ASSET_MARKER_COLORS: Record<AssetStatus, string> = {
   OUT_OF_SERVICE: '#000000'
 }
 
+/**
+ * Labels for `AssetLegend` (docs/feature/13-asset-legend.md). Same wording as
+ * `assetStatusLabel` (`features/assets/utils/assetFormat.ts`), declared
+ * locally instead of imported — `map` doesn't import from `assets`
+ * (architecture.md, "Regla de dependencia"), same precedent already set by
+ * `ASSET_MARKER_COLORS` above vs. `assetStatusColorRole`.
+ */
+export const ASSET_STATUS_LEGEND_LABELS: Record<AssetStatus, string> = {
+  OK: 'OK',
+  FULL: 'Completo',
+  DAMAGED: 'Dañado',
+  OUT_OF_SERVICE: 'Fuera de servicio'
+}
+
 export function assetMarkerColor(status: AssetStatus): string {
   return ASSET_MARKER_COLORS[status]
 }

@@ -23,7 +23,7 @@ export const heatmapSidebarStyle: CSSProperties = {
   flexShrink: 0
 }
 
-export function heatmapLegendSwatchStyle(color: string): CSSProperties {
+export function legendSwatchStyle(color: string): CSSProperties {
   return {
     display: 'inline-block',
     width: '12px',
