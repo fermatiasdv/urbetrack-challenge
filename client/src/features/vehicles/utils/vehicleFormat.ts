@@ -3,7 +3,7 @@
  * (docs/feature/03-vehicles-table.md, "Decisiones propuestas" #1).
  * Pure functions, no React/store dependencies — unit-testable in isolation.
  */
-import type { VehicleStatus, VehicleType } from '../types/vehicle.types'
+import type { VehicleStatus, VehicleType } from '../../../shared/types/domain.types'
 
 const VEHICLE_TYPE_LABELS: Record<VehicleType, string> = {
   TRUCK: 'Camión',

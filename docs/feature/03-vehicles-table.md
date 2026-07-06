@@ -31,8 +31,9 @@ reemplaza esos literales por filas **generadas dinámicamente** a partir de `Veh
 
 ## Diagnóstico
 
-- `client/src/features/vehicles/` ya tiene `types/vehicle.types.ts` (`Vehicle`, `VehicleType`,
-  `VehicleStatus`), `store/useVehiclesStore.ts` (`{ vehicles, setVehicles }`) y
+- `client/src/features/vehicles/` ya tiene `Vehicle`, `VehicleType`, `VehicleStatus` disponibles vía
+  `client/src/shared/types/domain.types.ts` (ver [chore 04](../chore/04-move-typed.md)),
+  `store/useVehiclesStore.ts` (`{ vehicles, setVehicles }`) y
   `api/useVehiclesQuery.ts` (hidrata el store desde `GET /vehicles`), todos creados en
   [feature 02](./02-vehicle-statuscard.md). Este spec no necesita un nuevo endpoint ni ampliar el
   modelo de datos.
@@ -124,8 +125,6 @@ client/src/features/vehicles/
   store/
     useVehiclesStore.ts           # se amplía: + removeVehicle(id)
     useVehicleModalStore.ts       # nuevo: { vehicleId, mode, open, close }
-  types/
-    zone.types.ts                 # nuevo: Zone { id, name }
   utils/
     vehicleFormat.ts               # nuevo: vehicleTypeLabel, vehicleStatusLabel, formatCapacity
   components/
@@ -137,8 +136,11 @@ client/src/features/vehicles/
 ```
 
 Todos los archivos nuevos van dentro de `features/vehicles/` (regla de "Estructura interna de una
-feature" en [architecture.md](../specs/architecture.md)); nada se agrega a `shared/` porque nada de
-esto se reutiliza todavía desde una segunda feature.
+feature" en [architecture.md](../specs/architecture.md)); nada se agrega a `shared/` (componentes,
+hooks, utils) porque nada de esto se reutiliza todavía desde una segunda feature. La única excepción
+es el tipado: `Zone` (`{ id, name }`) vive en `client/src/shared/types/domain.types.ts`, fuente única
+de verdad del tipado de dominio ([chore 04](../chore/04-move-typed.md)), no en un `types/` propio de
+la feature.
 
 ## Gaps — resolución confirmada por el usuario (2026-07-06)
 

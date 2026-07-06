@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildVehicleStatusCards, formatPercentage } from './useVehicleStatusCards'
-import type { Vehicle } from '../types/vehicle.types'
+import type { Vehicle } from '../../../shared/types/domain.types'
 
 function vehicle(id: string, status: Vehicle['status']): Vehicle {
   return { id, plate: `PLT${id}`, type: 'TRUCK', status, capacity: 1000, zoneId: '1' }

@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { VehicleRowActionsMenu } from './VehicleRowActionsMenu'
 import { useVehicleModalStore } from '../store/useVehicleModalStore'
 import { useVehiclesStore } from '../store/useVehiclesStore'
-import type { Vehicle } from '../types/vehicle.types'
+import type { Vehicle } from '../../../shared/types/domain.types'
 
 const VEHICLE: Vehicle = {
   id: '1',

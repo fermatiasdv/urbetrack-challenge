@@ -36,9 +36,10 @@ localmente, sin nuevas consultas al backend"), combinados con AND entre sí.
 - No existe un endpoint que devuelva "los tipos/estados/capacidades disponibles para filtrar": las
   opciones de los `<select>` del mockup (`Truck`/`Van`/`Pickup`, `Active`/`Maintenance`/`Out of
   Service`, los 3 rangos de capacidad) deben salir de **constantes en el cliente**, pero mapeando
-  1:1 contra los valores reales del modelo `Vehicle` (`client/src/features/vehicles/types/vehicle.types.ts`:
+  1:1 contra los valores reales del modelo `Vehicle` (`client/src/shared/types/domain.types.ts`, fuente
+  única de verdad del tipado de dominio, ver [chore 04](../chore/04-move-typed.md)):
   `VehicleType = 'TRUCK' | 'VAN' | 'PICKUP'`, `VehicleStatus = 'ACTIVE' | 'MAINTENANCE' |
-  'OUT_OF_SERVICE'`) — no literales sueltos ni copiados del inglés del mockup. `capacity` es
+  'OUT_OF_SERVICE'` — no literales sueltos ni copiados del inglés del mockup. `capacity` es
   `number` sin unidades ni enum, por lo que los 3 rangos de capacidad (`<1000kg`, `1000-2000kg`,
   `>2000kg`) se modelan como una unión de literales propia (ver punto 2).
 - Ya existen `vehicleTypeLabel`/`vehicleStatusLabel` en

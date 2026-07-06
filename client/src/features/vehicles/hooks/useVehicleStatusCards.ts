@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { AlertCircle, CheckCircle2, TrendingUp, Truck, Wrench } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { Vehicle, VehicleStatus } from '../types/vehicle.types'
+import type { Vehicle, VehicleStatus } from '../../../shared/types/domain.types'
 import { useVehiclesStore } from '../store/useVehiclesStore'
 
 export type VehicleStatusKey = 'total' | 'active' | 'maintenance' | 'outOfService'

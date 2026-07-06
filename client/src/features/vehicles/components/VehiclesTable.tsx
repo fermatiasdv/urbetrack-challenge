@@ -6,7 +6,7 @@ import {
   useReactTable
 } from '@tanstack/react-table'
 import { Table } from '@radix-ui/themes'
-import type { Vehicle } from '../types/vehicle.types'
+import type { Vehicle } from '../../../shared/types/domain.types'
 import { useFilteredVehicles } from '../hooks/useFilteredVehicles'
 import { useZonesQuery } from '../api/useZonesQuery'
 import {

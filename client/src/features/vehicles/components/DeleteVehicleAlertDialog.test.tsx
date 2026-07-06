@@ -4,7 +4,7 @@ import { Theme } from '@radix-ui/themes'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DeleteVehicleAlertDialog } from './DeleteVehicleAlertDialog'
 import { useVehiclesStore } from '../store/useVehiclesStore'
-import type { Vehicle } from '../types/vehicle.types'
+import type { Vehicle } from '../../../shared/types/domain.types'
 
 const VEHICLE: Vehicle = {
   id: '1',

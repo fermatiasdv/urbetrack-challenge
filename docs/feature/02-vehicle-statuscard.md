@@ -161,8 +161,6 @@ client/src/features/vehicles/
     useVehiclesQuery.ts          # useQuery -> GET /vehicles
   store/
     useVehiclesStore.ts          # Zustand: { vehicles, setVehicles }
-  types/
-    vehicle.types.ts             # Vehicle, VehicleStatus, VehicleType (mismo shape que api/src/types)
   hooks/
     useVehicleStatusCards.ts     # deriva VehicleStatusCardData[] desde el store (memoizado)
   components/
@@ -172,6 +170,10 @@ client/src/features/vehicles/
   pages/
     VehiclesPage.tsx             # se modifica: monta <VehicleStatusCards />
 ```
+
+> `Vehicle`, `VehicleStatus`, `VehicleType` (mismo shape que `api/src/types`) viven en
+> `client/src/shared/types/domain.types.ts`, fuente única de verdad del tipado de dominio
+> (ver [chore 04](../chore/04-move-typed.md)), no en un `types/` propio de la feature.
 
 Todos los directorios nuevos existen porque la feature `vehicles` los necesita (regla de
 "Estructura interna de una feature" en [architecture.md](../specs/architecture.md)); no se agrega

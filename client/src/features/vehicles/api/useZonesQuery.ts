@@ -1,5 +1,5 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
-import type { Zone } from '../types/zone.types'
+import type { Zone } from '../../../shared/types/domain.types'
 
 /**
  * Base URL of the mock backend (see API.md — fixed at http://localhost:3000,

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
-import type { Vehicle } from '../types/vehicle.types'
+import type { Vehicle } from '../../../shared/types/domain.types'
 import { useVehiclesStore } from '../store/useVehiclesStore'
 
 /**

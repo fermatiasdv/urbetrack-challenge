@@ -7,7 +7,7 @@ import type { ReactNode } from 'react'
 import { VehiclesFilterBar } from './VehiclesFilterBar'
 import { useVehicleFiltersStore } from '../store/useVehicleFiltersStore'
 import { DEFAULT_VEHICLE_FILTERS } from '../utils/vehicleFilters'
-import type { Zone } from '../types/zone.types'
+import type { Zone } from '../../../shared/types/domain.types'
 
 const ZONES: Zone[] = [
   { id: '1', name: 'Microcentro' },

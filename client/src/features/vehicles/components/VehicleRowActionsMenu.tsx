@@ -1,7 +1,7 @@
 import { useState, type JSX } from 'react'
 import { IconButton, DropdownMenu } from '@radix-ui/themes'
 import { MoreVertical } from 'lucide-react'
-import type { Vehicle } from '../types/vehicle.types'
+import type { Vehicle } from '../../../shared/types/domain.types'
 import { useVehicleModalStore } from '../store/useVehicleModalStore'
 import { DeleteVehicleAlertDialog } from './DeleteVehicleAlertDialog'
 

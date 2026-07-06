@@ -136,6 +136,11 @@ shared/
   lib/
 ```
 
+`shared/types/` contiene un único archivo, `domain.types.ts`, con **todo** el tipado de dominio del
+cliente (`Vehicle`, `VehicleStatus`, `VehicleType`, `Zone`, etc.). Es la **fuente única de verdad**
+del tipado: ninguna feature declara ni re-declara tipos de dominio propios en un `types/` local (ver
+[chore 04](../chore/04-move-typed.md)).
+
 ### features
 
 Contiene toda la lógica funcional del dominio.
@@ -161,11 +166,12 @@ features/
     hooks/
     schemas/
     store/
-    types/
     pages/
 ```
 
 No todos los directorios son obligatorios. Cada feature define únicamente aquellos que necesite.
+`types/` **no** es un directorio típico de feature: el tipado de dominio vive en
+`shared/types/domain.types.ts` (ver sección `shared` más arriba y [chore 04](../chore/04-move-typed.md)).
 
 ---
 
