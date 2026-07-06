@@ -66,7 +66,10 @@ describe('buildVehicleStatusCards', () => {
 
     const cards = buildVehicleStatusCards(vehicles)
     const byKey = Object.fromEntries(cards.map((card) => [card.key, card]))
-    const sum = (byKey.active?.value ?? 0) + (byKey.maintenance?.value ?? 0) + (byKey.outOfService?.value ?? 0)
+    const sum =
+      (byKey.active?.value ?? 0) +
+      (byKey.maintenance?.value ?? 0) +
+      (byKey.outOfService?.value ?? 0)
 
     expect(sum).toBe(byKey.total?.value)
   })

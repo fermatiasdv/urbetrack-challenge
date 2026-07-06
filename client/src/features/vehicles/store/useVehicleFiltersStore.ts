@@ -1,5 +1,9 @@
 import { create } from 'zustand'
-import type { CapacityFilter, VehicleStatusFilter, VehicleTypeFilter } from '../constants/vehicleFilterOptions'
+import type {
+  CapacityFilter,
+  VehicleStatusFilter,
+  VehicleTypeFilter
+} from '../constants/vehicleFilterOptions'
 import { DEFAULT_VEHICLE_FILTERS, type VehicleFilters } from '../utils/vehicleFilters'
 
 export interface VehicleFiltersState extends VehicleFilters {
