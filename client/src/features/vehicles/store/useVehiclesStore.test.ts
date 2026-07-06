@@ -37,6 +37,24 @@ describe('useVehiclesStore.removeVehicle', () => {
   })
 })
 
+describe('useVehiclesStore.addVehicle', () => {
+  it('appends the new vehicle', () => {
+    useVehiclesStore.getState().setVehicles(VEHICLES)
+    const created: Vehicle = {
+      id: '3',
+      plate: 'GHI789',
+      type: 'PICKUP',
+      status: 'ACTIVE',
+      capacity: 1000,
+      zoneId: '3'
+    }
+
+    useVehiclesStore.getState().addVehicle(created)
+
+    expect(useVehiclesStore.getState().vehicles).toEqual([...VEHICLES, created])
+  })
+})
+
 describe('useVehiclesStore.setVehicles', () => {
   it('marks the store as hydrated', () => {
     expect(useVehiclesStore.getState().hasHydrated).toBe(false)

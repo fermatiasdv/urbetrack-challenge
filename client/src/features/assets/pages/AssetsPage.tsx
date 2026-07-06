@@ -5,17 +5,19 @@ import { HeaderPage, type HeaderPageProps } from '../../../shared/components/Hea
 import { StatusSummaryCards } from '../../../shared/components/StatusSummaryCards'
 import { useAssetsQuery } from '../api/useAssetsQuery'
 import { useAssetStatusCards } from '../hooks/useAssetStatusCards'
+import { useAssetModalStore } from '../store/useAssetModalStore'
 import { AssetModal } from '../components/AssetModal'
 import { AssetsFilterBar } from '../components/AssetsFilterBar'
 import { AssetsTable } from '../components/AssetsTable'
 
 /**
- * Placeholder: el alta de activos es un spec futuro
- * (docs/feature/07-assets-page.md, "Fuera de alcance"), mismo criterio que
- * `handleAddVehicle`.
+ * Opens the "Agregar Activo" create modal
+ * (docs/feature/09-pagination-and-create-modal.md, "Decisiones propuestas" #5):
+ * replaces the previous placeholder now that the modal supports a `'create'`
+ * mode.
  */
 function handleAddAsset(): void {
-  console.info('Agregar Activo: modal de alta pendiente de un spec futuro')
+  useAssetModalStore.getState().openCreate()
 }
 
 const assetsHeaderProps: HeaderPageProps = {

@@ -1,9 +1,10 @@
 import { useEffect, useState, type JSX } from 'react'
-import { Button, Dialog, Flex, Grid, IconButton, Text, TextField } from '@radix-ui/themes'
+import { Button, Dialog, Flex, Grid, IconButton, Select, Text, TextField } from '@radix-ui/themes'
 import { AlertCircle, Info, MapPin, Weight, X } from 'lucide-react'
-import type { Vehicle } from '../../../shared/types/domain.types'
+import type { Vehicle, VehicleStatus, VehicleType } from '../../../shared/types/domain.types'
 import { useVehicleModalStore, type VehicleModalMode } from '../store/useVehicleModalStore'
 import { useVehiclesStore } from '../store/useVehiclesStore'
+import { createVehicle } from '../api/useVehiclesQuery'
 import { useZonesQuery } from '../../../shared/services/useZonesQuery'
 import { zoneNameFor } from '../../../shared/utils/zoneNameFor'
 import { StatusBadge } from '../../../shared/components/StatusBadge'
@@ -15,8 +16,28 @@ import {
 } from '../utils/vehicleFormat'
 import { vehicleModalContextBoxStyle } from './vehicleModal.styles'
 import { vehicleModalFormSchema } from '../schemas/vehicleModalSchema'
+import { vehicleCreateFormSchema } from '../schemas/vehicleCreateSchema'
 
 type ViewMode = 'details' | 'edit'
+
+const VEHICLE_TYPES: VehicleType[] = ['TRUCK', 'VAN', 'PICKUP']
+const VEHICLE_STATUSES: VehicleStatus[] = ['ACTIVE', 'MAINTENANCE', 'OUT_OF_SERVICE']
+
+interface CreateFormDraft {
+  plate: string
+  type: VehicleType | ''
+  capacity: string
+  status: VehicleStatus | ''
+  zoneId: string
+}
+
+const EMPTY_CREATE_DRAFT: CreateFormDraft = {
+  plate: '',
+  type: '',
+  capacity: '',
+  status: '',
+  zoneId: ''
+}
 
 function initialViewMode(mode: VehicleModalMode | null): ViewMode {
   return mode === 'edit' ? 'edit' : 'details'
@@ -43,6 +64,7 @@ export function VehicleModal(): JSX.Element | null {
   const close = useVehicleModalStore((state) => state.close)
   const vehicles = useVehiclesStore((state) => state.vehicles)
   const updateVehicle = useVehiclesStore((state) => state.updateVehicle)
+  const addVehicle = useVehiclesStore((state) => state.addVehicle)
   const { data: zones } = useZonesQuery()
 
   const foundVehicle = vehicles.find((candidate) => candidate.id === vehicleId) ?? null
@@ -50,6 +72,10 @@ export function VehicleModal(): JSX.Element | null {
   const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode(requestedMode))
   const [plateDraft, setPlateDraft] = useState('')
   const [plateError, setPlateError] = useState<string | null>(null)
+  const [createDraft, setCreateDraft] = useState<CreateFormDraft>(EMPTY_CREATE_DRAFT)
+  const [createErrors, setCreateErrors] = useState<Partial<Record<keyof CreateFormDraft, string>>>(
+    {}
+  )
   const [isSaving, setIsSaving] = useState(false)
   const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(
     null
@@ -57,8 +83,17 @@ export function VehicleModal(): JSX.Element | null {
 
   // Reset all local/draft state whenever a (possibly different) vehicle
   // modal is opened, so a leftover draft from a previous vehicle never
-  // leaks into the next one.
+  // leaks into the next one. The `'create'` mode resets the create form
+  // instead (docs/feature/09-pagination-and-create-modal.md, "Decisiones
+  // propuestas" #3).
   useEffect(() => {
+    if (requestedMode === 'create') {
+      setCreateDraft(EMPTY_CREATE_DRAFT)
+      setCreateErrors({})
+      setFeedback(null)
+      setIsSaving(false)
+      return
+    }
     if (foundVehicle) {
       setViewMode(initialViewMode(requestedMode))
       setPlateDraft(foundVehicle.plate)
@@ -67,15 +102,233 @@ export function VehicleModal(): JSX.Element | null {
       setIsSaving(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vehicleId])
+  }, [vehicleId, requestedMode])
 
   // A `vehicleId` was set but no longer matches any vehicle in the store
   // (e.g. it was deleted): close instead of rendering an empty modal.
   useEffect(() => {
-    if (vehicleId !== null && foundVehicle === null) {
+    if (requestedMode !== 'create' && vehicleId !== null && foundVehicle === null) {
       close()
     }
-  }, [vehicleId, foundVehicle, close])
+  }, [requestedMode, vehicleId, foundVehicle, close])
+
+  if (requestedMode === null) {
+    return null
+  }
+
+  function handleOpenChangeCreate(open: boolean): void {
+    if (!open) {
+      close()
+    }
+  }
+
+  async function handleCreate(): Promise<void> {
+    const result = vehicleCreateFormSchema.safeParse({
+      plate: createDraft.plate,
+      type: createDraft.type,
+      capacity: createDraft.capacity,
+      status: createDraft.status,
+      zoneId: createDraft.zoneId
+    })
+
+    if (!result.success) {
+      const nextErrors: Partial<Record<keyof CreateFormDraft, string>> = {}
+      for (const issue of result.error.issues) {
+        const field = issue.path[0] as keyof CreateFormDraft
+        nextErrors[field] = issue.message
+      }
+      setCreateErrors(nextErrors)
+      return
+    }
+
+    setCreateErrors({})
+    setIsSaving(true)
+    try {
+      const created: Vehicle = await createVehicle(result.data)
+      addVehicle(created)
+      setIsSaving(false)
+      close()
+    } catch {
+      setFeedback({ tone: 'error', message: 'No fue posible crear el vehículo.' })
+      setIsSaving(false)
+    }
+  }
+
+  if (requestedMode === 'create') {
+    return (
+      <Dialog.Root open onOpenChange={handleOpenChangeCreate}>
+        <Dialog.Content maxWidth="480px">
+          <Flex justify="between" align="center" mb="2">
+            <Dialog.Title mb="0">Agregar Vehículo</Dialog.Title>
+            <Dialog.Close>
+              <IconButton variant="ghost" color="gray" aria-label="Cerrar modal">
+                <X size={18} aria-hidden />
+              </IconButton>
+            </Dialog.Close>
+          </Flex>
+
+          <Dialog.Description size="2" color="gray" mb="4">
+            Cargá los datos del nuevo vehículo de la flota.
+          </Dialog.Description>
+
+          <Flex direction="column" gap="4">
+            <Flex direction="column" gap="1">
+              <Text as="label" htmlFor="vehicle-create-plate" size="2" color="gray">
+                Patente / Plate
+              </Text>
+              <TextField.Root
+                id="vehicle-create-plate"
+                placeholder="Ingrese patente"
+                value={createDraft.plate}
+                onChange={(event) => {
+                  setCreateDraft((draft) => ({ ...draft, plate: event.target.value }))
+                  setCreateErrors((errors) => ({ ...errors, plate: undefined }))
+                }}
+              />
+              {createErrors.plate ? (
+                <Text size="1" color="red">
+                  {createErrors.plate}
+                </Text>
+              ) : null}
+            </Flex>
+
+            <Grid columns="2" gap="4">
+              <Flex direction="column" gap="1">
+                <Text as="label" htmlFor="vehicle-create-type" size="2" color="gray">
+                  Tipo
+                </Text>
+                <Select.Root
+                  value={createDraft.type}
+                  onValueChange={(value) => {
+                    setCreateDraft((draft) => ({ ...draft, type: value as VehicleType }))
+                    setCreateErrors((errors) => ({ ...errors, type: undefined }))
+                  }}
+                >
+                  <Select.Trigger
+                    id="vehicle-create-type"
+                    aria-label="Tipo"
+                    placeholder="Seleccioná un tipo"
+                  />
+                  <Select.Content>
+                    {VEHICLE_TYPES.map((type) => (
+                      <Select.Item key={type} value={type}>
+                        {vehicleTypeLabel(type)}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+                {createErrors.type ? (
+                  <Text size="1" color="red">
+                    {createErrors.type}
+                  </Text>
+                ) : null}
+              </Flex>
+
+              <Flex direction="column" gap="1">
+                <Text as="label" htmlFor="vehicle-create-capacity" size="2" color="gray">
+                  Capacidad (KG)
+                </Text>
+                <TextField.Root
+                  id="vehicle-create-capacity"
+                  type="number"
+                  placeholder="5000"
+                  value={createDraft.capacity}
+                  onChange={(event) => {
+                    setCreateDraft((draft) => ({ ...draft, capacity: event.target.value }))
+                    setCreateErrors((errors) => ({ ...errors, capacity: undefined }))
+                  }}
+                />
+                {createErrors.capacity ? (
+                  <Text size="1" color="red">
+                    {createErrors.capacity}
+                  </Text>
+                ) : null}
+              </Flex>
+            </Grid>
+
+            <Grid columns="2" gap="4">
+              <Flex direction="column" gap="1">
+                <Text as="label" htmlFor="vehicle-create-status" size="2" color="gray">
+                  Estado
+                </Text>
+                <Select.Root
+                  value={createDraft.status}
+                  onValueChange={(value) => {
+                    setCreateDraft((draft) => ({ ...draft, status: value as VehicleStatus }))
+                    setCreateErrors((errors) => ({ ...errors, status: undefined }))
+                  }}
+                >
+                  <Select.Trigger
+                    id="vehicle-create-status"
+                    aria-label="Estado"
+                    placeholder="Seleccioná un estado"
+                  />
+                  <Select.Content>
+                    {VEHICLE_STATUSES.map((status) => (
+                      <Select.Item key={status} value={status}>
+                        {vehicleStatusLabel(status)}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+                {createErrors.status ? (
+                  <Text size="1" color="red">
+                    {createErrors.status}
+                  </Text>
+                ) : null}
+              </Flex>
+
+              <Flex direction="column" gap="1">
+                <Text as="label" htmlFor="vehicle-create-zone" size="2" color="gray">
+                  Zona
+                </Text>
+                <Select.Root
+                  value={createDraft.zoneId}
+                  onValueChange={(value) => {
+                    setCreateDraft((draft) => ({ ...draft, zoneId: value }))
+                    setCreateErrors((errors) => ({ ...errors, zoneId: undefined }))
+                  }}
+                >
+                  <Select.Trigger
+                    id="vehicle-create-zone"
+                    aria-label="Zona"
+                    placeholder="Seleccioná una zona"
+                  />
+                  <Select.Content>
+                    {(zones ?? []).map((zone) => (
+                      <Select.Item key={zone.id} value={zone.id}>
+                        {zone.name}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+                {createErrors.zoneId ? (
+                  <Text size="1" color="red">
+                    {createErrors.zoneId}
+                  </Text>
+                ) : null}
+              </Flex>
+            </Grid>
+          </Flex>
+
+          {feedback ? (
+            <Text size="2" color={feedback.tone === 'success' ? 'green' : 'red'} mt="4" as="p">
+              {feedback.message}
+            </Text>
+          ) : null}
+
+          <Flex justify="end" gap="3" mt="5">
+            <Button variant="soft" color="gray" onClick={() => close()}>
+              Cancelar
+            </Button>
+            <Button onClick={() => void handleCreate()} disabled={isSaving}>
+              Crear
+            </Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+    )
+  }
 
   if (vehicleId === null || foundVehicle === null) {
     return null

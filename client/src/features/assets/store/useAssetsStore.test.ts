@@ -53,6 +53,25 @@ describe('useAssetsStore.removeAsset', () => {
   })
 })
 
+describe('useAssetsStore.addAsset', () => {
+  it('appends the new asset', () => {
+    useAssetsStore.getState().setAssets(ASSETS)
+    const created: Asset = {
+      id: '3',
+      type: 'BENCH',
+      status: 'OK',
+      lat: 0,
+      lng: 0,
+      address: 'Nueva dirección',
+      zoneId: '3'
+    }
+
+    useAssetsStore.getState().addAsset(created)
+
+    expect(useAssetsStore.getState().assets).toEqual([...ASSETS, created])
+  })
+})
+
 describe('useAssetsStore.setAssets', () => {
   it('marks the store as hydrated', () => {
     expect(useAssetsStore.getState().hasHydrated).toBe(false)

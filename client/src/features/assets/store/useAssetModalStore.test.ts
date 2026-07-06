@@ -25,4 +25,10 @@ describe('useAssetModalStore', () => {
     expect(useAssetModalStore.getState().assetId).toBeNull()
     expect(useAssetModalStore.getState().mode).toBeNull()
   })
+
+  it('openCreate sets mode to create with no assetId', () => {
+    useAssetModalStore.getState().openCreate()
+
+    expect(useAssetModalStore.getState()).toMatchObject({ assetId: null, mode: 'create' })
+  })
 })

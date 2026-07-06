@@ -21,6 +21,35 @@ export async function fetchAssets(): Promise<Asset[]> {
 }
 
 /**
+ * Creates a new asset against the mock backend
+ * (docs/feature/09-pagination-and-create-modal.md, "Decisiones propuestas" #4).
+ * Unlike edit/delete, `POST /assets` exists and is implemented
+ * (`api/src/controllers/assets.controller.ts`), so the alta calls it for real
+ * instead of only mutating the store — the response carries the
+ * server-issued `id`.
+ */
+export async function createAsset(payload: {
+  type: Asset['type']
+  status: Asset['status']
+  address: string
+  zoneId: string
+  lat: number
+  lng: number
+}): Promise<Asset> {
+  const response = await fetch(`${API_BASE_URL}/assets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to create asset: ${response.status}`)
+  }
+
+  return (await response.json()) as Asset
+}
+
+/**
  * Fetches the assets list from the mock backend and hydrates the Zustand
  * store **once** on success, following the "query hydrates store" pattern
  * (docs/specs/architecture.md#estado-global-y-data-fetching, "Hidratación

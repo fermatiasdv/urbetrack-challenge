@@ -5,6 +5,7 @@ export interface AssetsState {
   assets: Asset[]
   hasHydrated: boolean
   setAssets: (assets: Asset[]) => void
+  addAsset: (asset: Asset) => void
   removeAsset: (id: string) => void
   updateAsset: (id: string, changes: Partial<Asset>) => void
 }
@@ -26,6 +27,7 @@ export const useAssetsStore = create<AssetsState>((set) => ({
   assets: [],
   hasHydrated: false,
   setAssets: (assets) => set({ assets, hasHydrated: true }),
+  addAsset: (asset) => set((state) => ({ assets: [...state.assets, asset] })),
   removeAsset: (id) =>
     set((state) => ({ assets: state.assets.filter((asset) => asset.id !== id) })),
   updateAsset: (id, changes) =>

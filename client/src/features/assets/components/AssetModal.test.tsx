@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Theme } from '@radix-ui/themes'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { AssetModal } from './AssetModal'
 import { useAssetsStore } from '../store/useAssetsStore'
@@ -132,5 +132,105 @@ describe('AssetModal', () => {
 
     expect(useAssetModalStore.getState().assetId).toBeNull()
     expect(useAssetsStore.getState().assets[0]).toEqual(ASSET)
+  })
+})
+
+describe('AssetModal create mode', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole('combobox', { name: 'Tipo' }))
+    await user.click(await screen.findByRole('option', { name: 'Cesto' }))
+    await user.click(screen.getByRole('combobox', { name: 'Estado' }))
+    await user.click(await screen.findByRole('option', { name: 'OK' }))
+    await user.type(screen.getByLabelText('Dirección'), 'Av. Santa Fe 2')
+    await user.click(screen.getByRole('combobox', { name: 'Zona' }))
+    await user.click(await screen.findByRole('option', { name: 'Microcentro' }))
+    await user.type(screen.getByLabelText('Latitud'), '-34.6')
+    await user.type(screen.getByLabelText('Longitud'), '-58.4')
+  }
+
+  it('opens the "Agregar Activo" form with "Cancelar"/"Crear"', () => {
+    useAssetModalStore.getState().openCreate()
+    renderModal()
+
+    expect(screen.getByText('Agregar Activo')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Crear' })).toBeInTheDocument()
+  })
+
+  it('blocks "Crear" and shows a validation error for an empty address', async () => {
+    const user = userEvent.setup()
+    useAssetModalStore.getState().openCreate()
+    renderModal()
+
+    await user.click(screen.getByRole('button', { name: 'Crear' }))
+
+    expect(await screen.findByText('La dirección es obligatoria')).toBeInTheDocument()
+    expect(useAssetModalStore.getState().mode).toBe('create')
+  })
+
+  it('creates the asset via POST, adds it to the store and closes the modal', async () => {
+    const user = userEvent.setup()
+    const created: Asset = {
+      id: '2',
+      type: 'BIN',
+      status: 'OK',
+      address: 'Av. Santa Fe 2',
+      zoneId: '1',
+      lat: -34.6,
+      lng: -58.4
+    }
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: () => Promise.resolve(created)
+      })
+    )
+    useAssetModalStore.getState().openCreate()
+    renderModal()
+
+    await fillValidForm(user)
+    await user.click(screen.getByRole('button', { name: 'Crear' }))
+
+    await waitFor(() => expect(useAssetModalStore.getState().mode).toBeNull())
+    expect(useAssetsStore.getState().assets).toContainEqual(created)
+  })
+
+  it('shows an error and keeps the modal open when the POST fails', async () => {
+    const user = userEvent.setup()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve(null)
+      })
+    )
+    useAssetModalStore.getState().openCreate()
+    renderModal()
+
+    await fillValidForm(user)
+    await user.click(screen.getByRole('button', { name: 'Crear' }))
+
+    expect(await screen.findByText('No fue posible crear el activo.')).toBeInTheDocument()
+    expect(useAssetModalStore.getState().mode).toBe('create')
+    expect(useAssetsStore.getState().assets).toEqual([ASSET])
+  })
+
+  it('"Cancelar" closes the create form without creating anything', async () => {
+    const user = userEvent.setup()
+    useAssetModalStore.getState().openCreate()
+    renderModal()
+
+    await user.type(screen.getByLabelText('Dirección'), 'Av. Santa Fe 2')
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+    expect(useAssetModalStore.getState().mode).toBeNull()
+    expect(useAssetsStore.getState().assets).toEqual([ASSET])
   })
 })
