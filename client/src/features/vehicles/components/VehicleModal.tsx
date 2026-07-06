@@ -4,14 +4,15 @@ import { AlertCircle, Info, MapPin, Weight, X } from 'lucide-react'
 import type { Vehicle } from '../../../shared/types/domain.types'
 import { useVehicleModalStore, type VehicleModalMode } from '../store/useVehicleModalStore'
 import { useVehiclesStore } from '../store/useVehiclesStore'
-import { useZonesQuery } from '../api/useZonesQuery'
+import { useZonesQuery } from '../../../shared/services/useZonesQuery'
+import { zoneNameFor } from '../../../shared/utils/zoneNameFor'
+import { StatusBadge } from '../../../shared/components/StatusBadge'
 import {
   formatCapacity,
+  vehicleStatusColorRole,
   vehicleStatusLabel,
-  vehicleTypeLabel,
-  zoneNameFor
+  vehicleTypeLabel
 } from '../utils/vehicleFormat'
-import { statusBadgeStyleFor, statusDotStyleFor } from './vehicleStatusBadge.styles'
 import { vehicleModalContextBoxStyle } from './vehicleModal.styles'
 import { vehicleModalFormSchema } from '../schemas/vehicleModalSchema'
 
@@ -157,10 +158,10 @@ export function VehicleModal(): JSX.Element | null {
             <Dialog.Title mb="0">
               {vehicleTypeLabel(vehicle.type)} ({vehicle.plate})
             </Dialog.Title>
-            <span style={statusBadgeStyleFor(vehicle.status)}>
-              <span style={statusDotStyleFor(vehicle.status)} aria-hidden />
-              {vehicleStatusLabel(vehicle.status).toUpperCase()}
-            </span>
+            <StatusBadge
+              colorRole={vehicleStatusColorRole(vehicle.status)}
+              label={vehicleStatusLabel(vehicle.status).toUpperCase()}
+            />
           </Flex>
           <Dialog.Close>
             <IconButton variant="ghost" color="gray" aria-label="Cerrar modal">

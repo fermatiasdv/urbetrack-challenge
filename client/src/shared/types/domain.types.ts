@@ -24,3 +24,22 @@ export interface Zone {
   id: string
   name: string
 }
+
+/**
+ * Asset domain types (client-side), mirrored from the mock backend
+ * (`api/src/schemas/asset.schema.ts`). See docs/verified-scope.md §2.3 and
+ * docs/feature/07-assets-page.md.
+ */
+export type AssetType = 'BIN' | 'CONTAINER' | 'BENCH'
+
+export type AssetStatus = 'OK' | 'DAMAGED' | 'FULL' | 'OUT_OF_SERVICE'
+
+export interface Asset {
+  id: string
+  type: AssetType
+  status: AssetStatus
+  lat: number
+  lng: number
+  address: string
+  zoneId: string
+}

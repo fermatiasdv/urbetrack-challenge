@@ -4,11 +4,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { VehiclesTable } from './VehiclesTable'
 import { useVehiclesStore } from '../store/useVehiclesStore'
-import { useZonesQuery } from '../api/useZonesQuery'
+import { useZonesQuery } from '../../../shared/services/useZonesQuery'
 import type { Vehicle } from '../../../shared/types/domain.types'
 import type { Zone } from '../../../shared/types/domain.types'
 
-vi.mock('../api/useZonesQuery')
+vi.mock('../../../shared/services/useZonesQuery')
 
 const mockedUseZonesQuery = vi.mocked(useZonesQuery)
 
