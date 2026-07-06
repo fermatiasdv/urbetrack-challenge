@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { Theme } from '@radix-ui/themes'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { AssignmentControl } from './AssignmentControl'
 import type { Vehicle } from '../../../shared/types/domain.types'
@@ -10,6 +11,15 @@ const TRUCK: Vehicle = {
   type: 'TRUCK',
   status: 'ACTIVE',
   capacity: 5000,
+  zoneId: '1'
+}
+
+const VAN: Vehicle = {
+  id: 'v2',
+  plate: 'GHI789',
+  type: 'VAN',
+  status: 'ACTIVE',
+  capacity: 2000,
   zoneId: '1'
 }
 
@@ -51,5 +61,27 @@ describe('AssignmentControl', () => {
     renderControl()
 
     expect(screen.getByText('Sin asignar')).toBeInTheDocument()
+  })
+
+  it('calls onAssign with the selected vehicle id (CA handleValueChange)', async () => {
+    const user = userEvent.setup()
+    const onAssign = vi.fn()
+    renderControl({ eligibleVehicles: [TRUCK, VAN], onAssign })
+
+    await user.click(screen.getByLabelText('Vehículo asignado'))
+    await user.click(await screen.findByRole('option', { name: 'Furgoneta (GHI789)' }))
+
+    expect(onAssign).toHaveBeenCalledWith('v2')
+  })
+
+  it('calls onClear when "Sin asignar" is selected with a vehicle already assigned', async () => {
+    const user = userEvent.setup()
+    const onClear = vi.fn()
+    renderControl({ assignedVehicleId: 'v1', onClear })
+
+    await user.click(screen.getByLabelText('Vehículo asignado'))
+    await user.click(await screen.findByRole('option', { name: 'Sin asignar' }))
+
+    expect(onClear).toHaveBeenCalled()
   })
 })

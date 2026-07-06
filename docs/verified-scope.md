@@ -263,7 +263,7 @@ El backend mock actual no expone `POST /zones` ni ningún endpoint de actualizac
 8. Los marcadores de activos usan colores por estado: `OK` verde, `FULL` rojo, `DAMAGED` naranja, `OUT_OF_SERVICE` negro.
 9. Al hacer hover sobre un marcador se ve un tooltip con tipo y estado del incidente asociado; si el activo no tiene incidente asociado, muestra "Estado OK." en verde.
 10. La leyenda del mapa de calor muestra `REPORTED` azul, `IN_PROGRESS` amarillo, `RESOLVED` verde.
-11. Si no hay vehículos disponibles para una zona, se muestra una alerta no cerrable, de ancho completo, debajo del mapa y encima de las Tabs: "No hay vehículos disponibles para esta zona".
+11. Si no hay vehículos disponibles para una zona, se muestra una alerta no cerrable, de ancho completo, debajo del mapa y encima de las Tabs: "No hay vehículos disponibles para {nombre de zona}" (p. ej. "No hay vehículos disponibles para Microcentro") — texto actualizado 2026-07-06, ver §10.8.
 12. Los incidentes `OVERFLOW` se asocian al `BIN`/`CONTAINER` más cercano dentro de 100 metros.
 13. Si se encuentra un activo válido, el incidente adopta sus coordenadas `lat`/`lng`.
 14. Si no se encuentra un activo dentro del radio, el incidente se sigue mostrando en mapa y tablas, marcado como sin activo asociado.
@@ -383,6 +383,8 @@ El marcador coloreado en el mapa representa el estado de un **activo**, pero el 
 
 **Resolución (confirmada):** cuando no existen vehículos disponibles para operar los incidentes de una zona, debe mostrarse una alerta no cerrable, de ancho completo, ubicada debajo del mapa y encima de las Tabs, con el texto: "No hay vehículos disponibles para esta zona".
 
+**Actualizado 2026-07-06** (pedido directo del usuario, ver [docs/feature/12-availability-alert.md](./feature/12-availability-alert.md) "Revisión 2026-07-06"): el texto pasa a incluir el nombre de la zona afectada — "No hay vehículos disponibles para {nombre de zona}" (p. ej. "No hay vehículos disponibles para Microcentro") — en vez del genérico "para esta zona". El resto de la resolución (no cerrable, ancho completo, ubicación, una alerta por zona sin consolidar) no cambia.
+
 ### 10.9 "Identificador" como criterio de orden en vehículos — RESUELTO
 
 **Resolución (confirmada):** para vehículos, "ordenar por identificador" usa la Placa (`plate`) en lugar del `id` interno.
@@ -482,6 +484,8 @@ El marcador coloreado en el mapa representa el estado de un **activo**, pero el 
 ### 10.8 Sin vehículo apto disponible — RESUELTO
 
 **Resolución (confirmada):** cuando no existen vehículos disponibles para operar los incidentes de una zona, debe mostrarse una alerta no cerrable, de ancho completo, ubicada debajo del mapa y encima de las Tabs, con el texto: "No hay vehículos disponibles para esta zona".
+
+**Actualizado 2026-07-06** (pedido directo del usuario, ver [docs/feature/12-availability-alert.md](./feature/12-availability-alert.md) "Revisión 2026-07-06"): el texto pasa a incluir el nombre de la zona afectada — "No hay vehículos disponibles para {nombre de zona}" (p. ej. "No hay vehículos disponibles para Microcentro") — en vez del genérico "para esta zona". El resto de la resolución (no cerrable, ancho completo, ubicación, una alerta por zona sin consolidar) no cambia.
 
 ### 10.9 "Identificador" como criterio de orden en vehículos — RESUELTO
 

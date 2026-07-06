@@ -105,4 +105,13 @@ describe('IncidentMarkersLayer', () => {
 
     expect(screen.queryByLabelText('Vehículo asignado')).not.toBeInTheDocument()
   })
+
+  it('still renders while the zones query is loading (zones is undefined)', () => {
+    mockedUseZonesQuery.mockReturnValue({ data: undefined } as unknown as UseQueryResult<Zone[]>)
+    useMapStore.setState({ incidents: [INDEPENDENT_INCIDENT] })
+
+    renderLayer()
+
+    expect(screen.getAllByTestId('marker')).toHaveLength(1)
+  })
 })
