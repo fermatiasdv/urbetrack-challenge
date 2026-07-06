@@ -14,8 +14,8 @@ describe('designTokens', () => {
   })
 
   it('exposes typography, rounded and spacing tokens', () => {
-    expect(designTokens.typography.bodyMd.fontFamily).toBe('Inter')
-    expect(designTokens.typography.headlineLg.fontSize).toBe('32px')
+    expect(designTokens.typography.bodyMd.fontFamily).toBe("'Poppins', Arial, sans-serif")
+    expect(designTokens.typography.headlineLg.fontSize).toBe('34px')
     expect(designTokens.rounded.DEFAULT).toBe('0.25rem')
     expect(designTokens.spacing.md).toBe('16px')
   })

@@ -96,8 +96,9 @@ export interface ColorTokens {
 /**
  * Typography
  *
- * Se usa Inter en todos los niveles de la jerarquía. Su x-height alta y excelente legibilidad la
- * hacen ideal para grillas densas de datos y dashboards técnicos.
+ * Se usa Poppins (con fallback a Arial / sans-serif del sistema) en todos los niveles de la
+ * jerarquía — ver docs/fix/10-styling-general.md. Una sans-serif moderna y de buena legibilidad
+ * para grillas densas de datos y dashboards técnicos.
  * - Headlines: títulos de página y encabezados de sección principales.
  * - Titles: encabezados de card y títulos de modal.
  * - Body: el nivel más usado, para carga de datos e información general (`body-md` es el default
@@ -267,68 +268,68 @@ export const designTokens: DesignTokens = {
   },
   typography: {
     headlineLg: {
-      fontFamily: 'Inter',
-      fontSize: '32px',
+      fontFamily: "'Poppins', Arial, sans-serif",
+      fontSize: '34px',
       fontWeight: '700',
-      lineHeight: '40px',
+      lineHeight: '42px',
       letterSpacing: '-0.02em'
     },
     headlineMd: {
-      fontFamily: 'Inter',
-      fontSize: '24px',
+      fontFamily: "'Poppins', Arial, sans-serif",
+      fontSize: '26px',
       fontWeight: '600',
-      lineHeight: '32px',
+      lineHeight: '34px',
       letterSpacing: '-0.01em'
     },
     headlineSm: {
-      fontFamily: 'Inter',
-      fontSize: '20px',
+      fontFamily: "'Poppins', Arial, sans-serif",
+      fontSize: '22px',
       fontWeight: '600',
-      lineHeight: '28px'
+      lineHeight: '30px'
     },
     titleLg: {
-      fontFamily: 'Inter',
-      fontSize: '18px',
+      fontFamily: "'Poppins', Arial, sans-serif",
+      fontSize: '20px',
       fontWeight: '600',
-      lineHeight: '24px'
+      lineHeight: '26px'
     },
     titleMd: {
-      fontFamily: 'Inter',
-      fontSize: '16px',
+      fontFamily: "'Poppins', Arial, sans-serif",
+      fontSize: '18px',
       fontWeight: '600',
-      lineHeight: '24px'
+      lineHeight: '26px'
     },
     bodyLg: {
-      fontFamily: 'Inter',
-      fontSize: '16px',
+      fontFamily: "'Poppins', Arial, sans-serif",
+      fontSize: '18px',
       fontWeight: '400',
-      lineHeight: '24px'
+      lineHeight: '26px'
     },
     bodyMd: {
-      fontFamily: 'Inter',
-      fontSize: '14px',
+      fontFamily: "'Poppins', Arial, sans-serif",
+      fontSize: '16px',
       fontWeight: '400',
-      lineHeight: '20px'
+      lineHeight: '22px'
     },
     labelMd: {
-      fontFamily: 'Inter',
-      fontSize: '12px',
+      fontFamily: "'Poppins', Arial, sans-serif",
+      fontSize: '14px',
       fontWeight: '500',
-      lineHeight: '16px',
+      lineHeight: '18px',
       letterSpacing: '0.05em'
     },
     labelSm: {
-      fontFamily: 'Inter',
-      fontSize: '10px',
+      fontFamily: "'Poppins', Arial, sans-serif",
+      fontSize: '12px',
       fontWeight: '600',
-      lineHeight: '14px',
+      lineHeight: '16px',
       letterSpacing: '0.05em'
     },
     headlineLgMobile: {
-      fontFamily: 'Inter',
-      fontSize: '24px',
+      fontFamily: "'Poppins', Arial, sans-serif",
+      fontSize: '26px',
       fontWeight: '700',
-      lineHeight: '32px'
+      lineHeight: '34px'
     }
   },
   rounded: {

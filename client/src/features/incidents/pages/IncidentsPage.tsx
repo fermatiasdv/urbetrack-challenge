@@ -1,9 +1,9 @@
 import type { JSX } from 'react'
-import { Skeleton } from '@radix-ui/themes'
+import { Flex, Skeleton } from '@radix-ui/themes'
 import { Plus } from 'lucide-react'
 import { HeaderPage, type HeaderPageProps } from '../../../shared/components/HeaderPage'
 import { StatusSummaryCards } from '../../../shared/components/StatusSummaryCards'
-import { useIncidentsQuery } from '../api/useIncidentsQuery'
+import { useIncidentsQuery } from '../../../shared/services/incidents/useIncidentsQuery'
 import { useIncidentStatusCards } from '../hooks/useIncidentStatusCards'
 import { useIncidentModalStore } from '../store/useIncidentModalStore'
 import { IncidentModal } from '../components/IncidentModal'
@@ -36,7 +36,7 @@ export function IncidentsPage(): JSX.Element {
   const cards = useIncidentStatusCards()
 
   return (
-    <div>
+    <Flex direction="column" gap="5">
       <HeaderPage {...incidentsHeaderProps} />
       {isLoading ? (
         <Skeleton height="140px" />
@@ -48,6 +48,6 @@ export function IncidentsPage(): JSX.Element {
         </>
       )}
       <IncidentModal />
-    </div>
+    </Flex>
   )
 }

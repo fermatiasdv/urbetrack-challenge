@@ -87,7 +87,7 @@ export function Sidebar(): JSX.Element {
                   <Button
                     key={item.to}
                     asChild
-                    variant={isActive ? 'soft' : 'ghost'}
+                    variant="ghost"
                     radius="large"
                     style={isActive ? navItemActiveStyle : navItemInactiveStyle}
                   >
@@ -106,7 +106,7 @@ export function Sidebar(): JSX.Element {
           <Separator size="4" mb="3" />
           <Button style={reportIncidentButtonStyle} radius="large" size="3">
             <BellPlus aria-hidden size={18} />
-            <Text style={navItemLabelStyle}>Report Incident</Text>
+            <Text style={navItemLabelStyle}>Reportar incidente</Text>
           </Button>
         </Box>
       </Flex>

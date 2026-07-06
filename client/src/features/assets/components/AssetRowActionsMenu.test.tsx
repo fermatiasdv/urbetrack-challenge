@@ -4,7 +4,7 @@ import { Theme } from '@radix-ui/themes'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AssetRowActionsMenu } from './AssetRowActionsMenu'
 import { useAssetModalStore } from '../store/useAssetModalStore'
-import { useAssetsStore } from '../store/useAssetsStore'
+import { useAssetsStore } from '../../../shared/services/assets/useAssetsStore'
 import type { Asset } from '../../../shared/types/domain.types'
 
 const ASSET: Asset = {

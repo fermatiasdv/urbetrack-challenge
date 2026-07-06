@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { Skeleton } from '@radix-ui/themes'
+import { Flex, Skeleton } from '@radix-ui/themes'
 import { Plus } from 'lucide-react'
 import { HeaderPage, type HeaderPageProps } from '../../../shared/components/HeaderPage'
 import { useVehiclesQuery } from '../api/useVehiclesQuery'
@@ -33,7 +33,7 @@ export function VehiclesPage(): JSX.Element {
   const { isLoading } = useVehiclesQuery()
 
   return (
-    <div>
+    <Flex direction="column" gap="5">
       <HeaderPage {...vehiclesHeaderProps} />
       {isLoading ? (
         <Skeleton height="140px" />
@@ -45,6 +45,6 @@ export function VehiclesPage(): JSX.Element {
         </>
       )}
       <VehicleModal />
-    </div>
+    </Flex>
   )
 }

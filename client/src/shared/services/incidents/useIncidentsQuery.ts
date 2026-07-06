@@ -1,12 +1,11 @@
 import { useEffect } from 'react'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
-import type { Incident } from '../../../shared/types/domain.types'
-import { useIncidentsStore } from '../store/useIncidentsStore'
-import type { IncidentCreateFormValues } from '../schemas/incidentCreateSchema'
+import type { Incident } from '../../types/domain.types'
+import { useIncidentsStore } from './useIncidentsStore'
 
 /**
  * Base URL of the mock backend (see API.md — fixed at http://localhost:3000).
- * Same value as `features/assets/api/useAssetsQuery.ts`.
+ * Same value as `shared/services/assets/useAssetsQuery.ts`.
  */
 const API_BASE_URL = 'http://localhost:3000'
 
@@ -28,7 +27,13 @@ export async function fetchIncidents(): Promise<Incident[]> {
  * real instead of only mutating the store — the response carries the
  * server-issued `id`/`createdAt`.
  */
-export async function createIncident(payload: IncidentCreateFormValues): Promise<Incident> {
+export async function createIncident(payload: {
+  type: Incident['type']
+  description: string
+  zoneId: string
+  lat: number
+  lng: number
+}): Promise<Incident> {
   const response = await fetch(`${API_BASE_URL}/incidents`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -48,6 +53,10 @@ export async function createIncident(payload: IncidentCreateFormValues): Promise
  * (docs/specs/architecture.md#estado-global-y-data-fetching, "Hidratación
  * única") — same `hasHydrated` guard and disabled-refetch options as
  * `useAssetsQuery`.
+ *
+ * Moved to `shared/services/incidents/` (docs/feature/10-maps-create.md,
+ * decisión #3): both `features/incidents` and `features/map` consume this
+ * same query/store pair.
  */
 export function useIncidentsQuery(): UseQueryResult<Incident[]> {
   const setIncidents = useIncidentsStore((state) => state.setIncidents)

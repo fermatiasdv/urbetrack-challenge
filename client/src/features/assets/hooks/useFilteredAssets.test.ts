@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { useFilteredAssets } from './useFilteredAssets'
-import { useAssetsStore } from '../store/useAssetsStore'
+import { useAssetsStore } from '../../../shared/services/assets/useAssetsStore'
 import { useAssetFiltersStore } from '../store/useAssetFiltersStore'
 import { DEFAULT_ASSET_FILTERS } from '../utils/assetFilters'
 import type { Asset } from '../../../shared/types/domain.types'

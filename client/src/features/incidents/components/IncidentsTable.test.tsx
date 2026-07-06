@@ -3,7 +3,7 @@ import { Theme } from '@radix-ui/themes'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { IncidentsTable } from './IncidentsTable'
-import { useIncidentsStore } from '../store/useIncidentsStore'
+import { useIncidentsStore } from '../../../shared/services/incidents/useIncidentsStore'
 import { useZonesQuery } from '../../../shared/services/useZonesQuery'
 import type { Incident, Zone } from '../../../shared/types/domain.types'
 

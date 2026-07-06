@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useAssetsStore } from '../store/useAssetsStore'
+import { useAssetsStore } from '../../../shared/services/assets/useAssetsStore'
 import { useAssetFiltersStore } from '../store/useAssetFiltersStore'
 import { filterAssets } from '../utils/assetFilters'
 import type { Asset } from '../../../shared/types/domain.types'

@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import { ConfirmAlertDialog } from '../../../shared/components/ConfirmAlertDialog'
 import type { Incident } from '../../../shared/types/domain.types'
-import { useIncidentsStore } from '../store/useIncidentsStore'
+import { useIncidentsStore } from '../../../shared/services/incidents/useIncidentsStore'
 import { incidentTypeLabel, formatIncidentDate } from '../utils/incidentFormat'
 
 export interface DeleteIncidentAlertDialogProps {

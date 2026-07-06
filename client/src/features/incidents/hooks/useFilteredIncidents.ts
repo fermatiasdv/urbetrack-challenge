@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useIncidentsStore } from '../store/useIncidentsStore'
+import { useIncidentsStore } from '../../../shared/services/incidents/useIncidentsStore'
 import { useIncidentFiltersStore } from '../store/useIncidentFiltersStore'
 import { filterIncidents } from '../utils/incidentFilters'
 import type { Incident } from '../../../shared/types/domain.types'

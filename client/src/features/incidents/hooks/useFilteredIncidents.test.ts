@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { useFilteredIncidents } from './useFilteredIncidents'
-import { useIncidentsStore } from '../store/useIncidentsStore'
+import { useIncidentsStore } from '../../../shared/services/incidents/useIncidentsStore'
 import { useIncidentFiltersStore } from '../store/useIncidentFiltersStore'
 import { DEFAULT_INCIDENT_FILTERS } from '../utils/incidentFilters'
 import type { Incident } from '../../../shared/types/domain.types'
