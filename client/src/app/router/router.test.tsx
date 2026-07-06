@@ -40,37 +40,37 @@ function renderRouter(testRouter: ReturnType<typeof createTestRouter>) {
 }
 
 const SCREENS: readonly { path: string; legend: string }[] = [
-  { path: '/mapa', legend: 'Mapa' },
+  { path: '/', legend: 'Mapa' },
   { path: '/activos', legend: 'Activos' },
   { path: '/vehiculos', legend: 'Vehículos' },
   { path: '/incidentes', legend: 'Incidentes' }
 ]
 
 describe('routeTree', () => {
-  it('registers the root layout plus the five expected screens', () => {
-    expect(routeTree.children).toHaveLength(5)
+  it('registers the root layout plus the four expected screens', () => {
+    expect(routeTree.children).toHaveLength(4)
   })
 })
 
 describe('router', () => {
   it('exposes the app router built from routeTree', () => {
-    expect(router.routeTree.children).toHaveLength(5)
+    expect(router.routeTree.children).toHaveLength(4)
   })
 })
 
 describe('router integration', () => {
-  it('renders the Dashboard legend on the initial route', async () => {
+  it('renders the Mapa legend on the initial route', async () => {
     const testRouter = createTestRouter('/')
     renderRouter(testRouter)
 
-    await screen.findByRole('heading', { name: 'Dashboard' })
+    await screen.findByRole('heading', { name: 'Mapa' })
   })
 
   it('keeps the sidebar mounted (same DOM node) while navigating between screens', async () => {
     const testRouter = createTestRouter('/')
     renderRouter(testRouter)
 
-    await screen.findByRole('heading', { name: 'Dashboard' })
+    await screen.findByRole('heading', { name: 'Mapa' })
     const sidebar = screen.getByRole('navigation')
 
     for (const { path, legend } of SCREENS) {

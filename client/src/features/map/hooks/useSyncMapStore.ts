@@ -8,8 +8,8 @@ import { useMapStore } from '../store/useMapStore'
 /**
  * Mounts the shared `assets`/`incidents` queries (same `['assets']`/
  * `['incidents']` query keys as `features/assets`/`features/incidents`, so
- * visiting `/mapa` triggers at most the same single `GET /assets`/`GET
- * /incidents` per app session — no duplicate fetch, docs/feature/10-maps-create.md
+ * visiting `/` (Mapa, docs/chore/06-delete-dashboardlink.md) triggers at most the same single
+ * `GET /assets`/`GET /incidents` per app session — no duplicate fetch, docs/feature/10-maps-create.md
  * decisión #3/CA-14) and keeps `MapStore` synced against the shared stores.
  *
  * Recomputes `MapStore` every time the shared `assets`/`incidents` arrays
