@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Incident } from '../../../shared/types/domain.types'
+import type { Incident } from '../../types/domain.types'
 
 export interface IncidentsState {
   incidents: Incident[]
@@ -11,10 +11,15 @@ export interface IncidentsState {
 }
 
 /**
- * Source of truth for the `incidents` feature (docs/specs/architecture.md
- * "Dónde vive cada store"). Hydrated **once** by `useIncidentsQuery`
- * (`hasHydrated` guards against a later remount/refetch overwriting local
- * mutations — same "Hidratación única" rationale as `useAssetsStore`).
+ * Source of truth for incident data, shared between the `incidents` and
+ * `map` features (docs/feature/10-maps-create.md, decisión #3 / "Origen de
+ * los datos"). Moved from `features/incidents/store/useIncidentsStore.ts` to
+ * `shared/services/incidents/` once `map` became a second consumer, per
+ * `architecture.md` ("Regla para shared").
+ *
+ * Hydrated **once** by `useIncidentsQuery` (`hasHydrated` guards against a
+ * later remount/refetch overwriting local mutations — "Hidratación única",
+ * docs/specs/architecture.md).
  *
  * `removeIncident` backs "Eliminar" and `updateIncident` backs "Guardar" in
  * `IncidentModal` (docs/feature/08-incidents-page.md): the mock backend has

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { Theme } from '@radix-ui/themes'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DeleteAssetAlertDialog } from './DeleteAssetAlertDialog'
-import { useAssetsStore } from '../store/useAssetsStore'
+import { useAssetsStore } from '../../../shared/services/assets/useAssetsStore'
 import type { Asset } from '../../../shared/types/domain.types'
 
 const ASSET: Asset = {

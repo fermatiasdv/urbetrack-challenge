@@ -4,7 +4,7 @@ import { Theme } from '@radix-ui/themes'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { IncidentRowActionsMenu } from './IncidentRowActionsMenu'
 import { useIncidentModalStore } from '../store/useIncidentModalStore'
-import { useIncidentsStore } from '../store/useIncidentsStore'
+import { useIncidentsStore } from '../../../shared/services/incidents/useIncidentsStore'
 import type { Incident } from '../../../shared/types/domain.types'
 
 const INCIDENT: Incident = {

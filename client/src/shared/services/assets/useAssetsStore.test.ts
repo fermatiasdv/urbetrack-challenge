@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { useAssetsStore } from './useAssetsStore'
-import type { Asset } from '../../../shared/types/domain.types'
+import type { Asset } from '../../types/domain.types'
 
 const ASSETS: Asset[] = [
   {

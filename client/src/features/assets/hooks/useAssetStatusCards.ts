@@ -3,7 +3,7 @@ import { AlertTriangle, Ban, CheckCircle2, Package, Wrench } from 'lucide-react'
 import type { StatusSummaryCardData } from '../../../shared/components/StatusSummaryCard'
 import { formatPercentage } from '../../../shared/utils/formatPercentage'
 import type { Asset, AssetStatus } from '../../../shared/types/domain.types'
-import { useAssetsStore } from '../store/useAssetsStore'
+import { useAssetsStore } from '../../../shared/services/assets/useAssetsStore'
 
 export type AssetStatusKey = 'total' | 'ok' | 'damaged' | 'full' | 'outOfService'
 

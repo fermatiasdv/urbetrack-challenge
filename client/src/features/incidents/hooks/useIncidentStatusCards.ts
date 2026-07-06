@@ -3,7 +3,7 @@ import { AlertCircle, AlertTriangle, CheckCircle2, Clock } from 'lucide-react'
 import type { StatusSummaryCardData } from '../../../shared/components/StatusSummaryCard'
 import { formatPercentage } from '../../../shared/utils/formatPercentage'
 import type { Incident, IncidentStatus } from '../../../shared/types/domain.types'
-import { useIncidentsStore } from '../store/useIncidentsStore'
+import { useIncidentsStore } from '../../../shared/services/incidents/useIncidentsStore'
 
 export type IncidentStatusKey = 'total' | 'reported' | 'inProgress' | 'resolved'
 

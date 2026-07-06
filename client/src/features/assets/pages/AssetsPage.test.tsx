@@ -4,11 +4,11 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { AssetsPage } from './AssetsPage'
-import { useAssetsQuery } from '../api/useAssetsQuery'
+import { useAssetsQuery } from '../../../shared/services/assets/useAssetsQuery'
 import { useAssetModalStore } from '../store/useAssetModalStore'
 import type { Asset } from '../../../shared/types/domain.types'
 
-vi.mock('../api/useAssetsQuery')
+vi.mock('../../../shared/services/assets/useAssetsQuery')
 
 vi.mock('../components/AssetsFilterBar', () => ({
   AssetsFilterBar: () => <div data-testid="assets-filter-bar" />

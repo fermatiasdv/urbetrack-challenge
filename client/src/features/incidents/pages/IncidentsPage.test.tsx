@@ -4,11 +4,11 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { IncidentsPage } from './IncidentsPage'
-import { useIncidentsQuery } from '../api/useIncidentsQuery'
+import { useIncidentsQuery } from '../../../shared/services/incidents/useIncidentsQuery'
 import { useIncidentModalStore } from '../store/useIncidentModalStore'
 import type { Incident } from '../../../shared/types/domain.types'
 
-vi.mock('../api/useIncidentsQuery')
+vi.mock('../../../shared/services/incidents/useIncidentsQuery')
 
 vi.mock('../components/IncidentsFilterBar', () => ({
   IncidentsFilterBar: () => <div data-testid="incidents-filter-bar" />

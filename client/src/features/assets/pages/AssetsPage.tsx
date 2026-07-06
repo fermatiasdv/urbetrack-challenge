@@ -1,9 +1,9 @@
 import type { JSX } from 'react'
-import { Skeleton } from '@radix-ui/themes'
+import { Flex, Skeleton } from '@radix-ui/themes'
 import { Plus } from 'lucide-react'
 import { HeaderPage, type HeaderPageProps } from '../../../shared/components/HeaderPage'
 import { StatusSummaryCards } from '../../../shared/components/StatusSummaryCards'
-import { useAssetsQuery } from '../api/useAssetsQuery'
+import { useAssetsQuery } from '../../../shared/services/assets/useAssetsQuery'
 import { useAssetStatusCards } from '../hooks/useAssetStatusCards'
 import { useAssetModalStore } from '../store/useAssetModalStore'
 import { AssetModal } from '../components/AssetModal'
@@ -35,7 +35,7 @@ export function AssetsPage(): JSX.Element {
   const cards = useAssetStatusCards()
 
   return (
-    <div>
+    <Flex direction="column" gap="5">
       <HeaderPage {...assetsHeaderProps} />
       {isLoading ? (
         <Skeleton height="140px" />
@@ -47,6 +47,6 @@ export function AssetsPage(): JSX.Element {
         </>
       )}
       <AssetModal />
-    </div>
+    </Flex>
   )
 }

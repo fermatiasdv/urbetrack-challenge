@@ -1,0 +1,14 @@
+/**
+ * Override del stack de fuente por defecto de @radix-ui/themes.
+ *
+ * `@radix-ui/themes/styles.css` fija su propia fuente vía la variable `--default-font-family`,
+ * consumida por todos los componentes Radix (Text, Heading, Button, Table, etc.) que no reciben un
+ * `style` propio. `designTokens.typography.*.fontFamily` (client/src/app/styles/tokens.ts) usa el
+ * mismo stack, pero solo lo consumen los componentes que sí arman su `style` a partir de
+ * `designTokens` (hoy, la sidebar). Este archivo alinea el resto de la app a la misma fuente.
+ *
+ * Ver spec: docs/fix/10-styling-general.md.
+ */
+:root {
+  --default-font-family: 'Poppins', Arial, sans-serif;
+}

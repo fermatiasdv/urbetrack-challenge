@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import { ConfirmAlertDialog } from '../../../shared/components/ConfirmAlertDialog'
 import type { Asset } from '../../../shared/types/domain.types'
-import { useAssetsStore } from '../store/useAssetsStore'
+import { useAssetsStore } from '../../../shared/services/assets/useAssetsStore'
 import { assetTypeLabel } from '../utils/assetFormat'
 
 export interface DeleteAssetAlertDialogProps {

@@ -45,24 +45,34 @@ export const navItemLabelStyle: CSSProperties = {
   ...designTokens.typography.labelMd
 }
 
-/** Ítem de navegación inactivo (mockup: `text-on-surface-variant`). */
+/**
+ * Ítem de navegación inactivo (mockup: `text-on-surface-variant`). `justifyContent: 'flex-start'`
+ * alinea el ícono+texto a la izquierda de la caja (Radix `Button` no expone prop `justify`, ver
+ * docs/fix/10-styling-general.md → "Alineación centrada").
+ */
 export const navItemInactiveStyle: CSSProperties = {
-  color: designTokens.colors.onSurfaceVariant
+  color: designTokens.colors.onSurfaceVariant,
+  justifyContent: 'flex-start'
 }
 
 /**
  * Ítem de navegación activo (mockup: `bg-secondary-container text-on-secondary-container
- * font-bold translate-x-1`).
+ * font-bold translate-x-1`). Misma `variant="ghost"` que el inactivo (docs/fix/10-styling-
+ * general.md → "Sidebar — tamaño de caja estable"): antes se alternaba entre `variant="soft"`
+ * (activo) y `"ghost"` (inactivo), y como Radix da a `ghost` una altura `fit-content` distinta de
+ * la altura fija del resto de las variantes, el link crecía al seleccionarse y corría a los de
+ * abajo. Ahora la única diferencia entre estados es este objeto de estilos.
  */
 export const navItemActiveStyle: CSSProperties = {
   backgroundColor: designTokens.colors.secondaryContainer,
   color: designTokens.colors.onSecondaryContainer,
   fontWeight: 700,
-  transform: 'translateX(0.25rem)'
+  transform: 'translateX(0.25rem)',
+  justifyContent: 'flex-start'
 }
 
 /**
- * Botón "Report Incident" (mockup: `w-full bg-tertiary text-on-tertiary font-bold`). `width:
+ * Botón "Reportar incidente" (mockup: `w-full bg-tertiary text-on-tertiary font-bold`). `width:
  * '100%'` es la única propiedad de layout que se resuelve acá porque `Button` de Radix no expone
  * una prop nativa de ancho completo (ver spec, "Gaps a resolver" → nota Card vs. Box).
  */
@@ -70,5 +80,6 @@ export const reportIncidentButtonStyle: CSSProperties = {
   width: '100%',
   backgroundColor: designTokens.colors.tertiary,
   color: designTokens.colors.onTertiary,
-  fontWeight: 700
+  fontWeight: 700,
+  justifyContent: 'flex-start'
 }

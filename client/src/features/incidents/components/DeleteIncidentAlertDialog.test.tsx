@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { Theme } from '@radix-ui/themes'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DeleteIncidentAlertDialog } from './DeleteIncidentAlertDialog'
-import { useIncidentsStore } from '../store/useIncidentsStore'
+import { useIncidentsStore } from '../../../shared/services/incidents/useIncidentsStore'
 import type { Incident } from '../../../shared/types/domain.types'
 
 const INCIDENT: Incident = {

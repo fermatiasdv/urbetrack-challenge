@@ -3,8 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import { createIncident, fetchIncidents, useIncidentsQuery } from './useIncidentsQuery'
-import { useIncidentsStore } from '../store/useIncidentsStore'
-import type { Incident } from '../../../shared/types/domain.types'
+import { useIncidentsStore } from './useIncidentsStore'
+import type { Incident } from '../../types/domain.types'
 
 const INCIDENTS: Incident[] = [
   {

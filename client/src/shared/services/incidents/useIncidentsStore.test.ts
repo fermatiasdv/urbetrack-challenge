@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { useIncidentsStore } from './useIncidentsStore'
-import type { Incident } from '../../../shared/types/domain.types'
+import type { Incident } from '../../types/domain.types'
 
 const INCIDENTS: Incident[] = [
   {

@@ -3,8 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import { createAsset, fetchAssets, useAssetsQuery } from './useAssetsQuery'
-import { useAssetsStore } from '../store/useAssetsStore'
-import type { Asset } from '../../../shared/types/domain.types'
+import { useAssetsStore } from './useAssetsStore'
+import type { Asset } from '../../types/domain.types'
 
 const ASSETS: Asset[] = [
   {
