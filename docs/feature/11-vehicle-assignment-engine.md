@@ -1,9 +1,11 @@
 # SPEC — Motor de asignación vehículo↔activo/incidente (§5)
 
 **Tipo:** feature
-**Estado:** Propuesto — pendiente de aprobación del usuario. Bloqueante únicamente para
-`AvailabilityAlert` en [docs/feature/10-maps-create.md](./10-maps-create.md) (decisión #1 de ese
-spec, 2026-07-06); el resto de la feature `map` no depende de este documento.
+**Estado:** Aprobado (2026-07-06) — gaps resueltos, ver "Decisiones confirmadas". Bloqueante
+únicamente para `AvailabilityAlert` en [docs/feature/10-maps-create.md](./10-maps-create.md)
+(decisión #1 de ese spec, 2026-07-06); el resto de la feature `map` no depende de este documento.
+`AvailabilityAlert` en sí **no se implementa** en este cambio (sigue sin existir en `MapPage`,
+ver "Fuera de alcance").
 **Fecha:** 2026-07-06
 **Relacionado:** [docs/verified-scope.md](../verified-scope.md) §5, §9 (criterios 15-17),
 [docs/feature/10-maps-create.md](./10-maps-create.md), [docs/specs/architecture.md](../specs/architecture.md),
@@ -67,46 +69,45 @@ de menor prioridad en la misma pasada de cálculo.
   `zoneId` contra la **zona derivada** del activo (más consistente con MAP-00, ya que el `zoneId` de
   vehículos es la única zona disponible para ellos — no tienen coordenadas).
 
-## Gaps a resolver antes de implementar (pendiente de decisión del usuario)
+## Decisiones confirmadas (resuelven los gaps abiertos, 2026-07-06)
 
-1. **Definición cuantitativa de "capacidad suficiente".** Sin un campo de magnitud en `Incident`,
-   se propone una regla fija por `AssetType` (ej. `BENCH` requiere cualquier capacidad, `BIN`
-   requiere ≥ 1000kg, `CONTAINER` requiere ≥ 2000kg — alineado a que `PICKUP` (hasta 1000kg) solo
-   opera `BENCH`, `VAN` (hasta 2000kg) opera `BENCH`/`BIN`, `TRUCK` (hasta 5000kg) opera los 3, según
-   la tabla de compatibilidad ya dada). A confirmar si esta equivalencia implícita capacidad↔tipo es
-   correcta o si se define un valor explícito distinto.
-2. **Alcance de "vehículos disponibles para una zona" que consume `AvailabilityAlert`.** Dos
-   interpretaciones posibles: (a) la zona no tiene *ningún* vehículo `ACTIVE` en absoluto
-   (independiente de si hay incidentes pendientes), o (b) la zona tiene incidentes/activos que
-   *necesitan* atención pero ningún vehículo apto quedó libre tras la asignación (criterio real de
-   "contención" del texto). Se propone (b), más fiel al párrafo original, pero requiere correr el
-   algoritmo de asignación completo para saber si "sobra" algún incidente sin vehículo — a confirmar.
-3. **Persistencia del resultado.** ¿La asignación se recalcula en cada cambio de estado
-   (activo/incidente/vehículo) y vive en un store propio (`useAssignmentStore`), o se calcula
-   on-demand solo para alimentar `AvailabilityAlert` sin exponerse en ninguna tabla/UI adicional? Se
-   propone lo segundo (cálculo derivado, sin store propio) por estar fuera de alcance cualquier
-   pantalla de "asignaciones" explícita — a confirmar.
-4. **Ubicación del código.** Al depender de `assets`, `incidents` **y** `vehicles`, y no pertenecer
-   exclusivamente a ninguna, se propone `shared/assignment/` (excepción a "shared solo si 2+
-   features lo usan", mismo criterio ya aplicado a `shared/geo/` en MAP-00, ya que el único
-   consumidor por ahora es `map`, pero la lógica en sí mezcla 3 dominios y no pertenece a ninguno de
-   ellos individualmente) — a confirmar si se prefiere ubicarlo directamente en `features/map/`
-   dado que hoy es su único consumidor real.
+1. **Capacidad suficiente — regla fija por `AssetType`.** `BENCH` no exige capacidad mínima (cualquier
+   vehículo compatible alcanza), `BIN` exige `vehicle.capacity >= 1000`, `CONTAINER` exige
+   `vehicle.capacity >= 2000`. Equivale 1:1 a la tabla de compatibilidad ya dada (`PICKUP` hasta
+   1000kg solo `BENCH`, `VAN` hasta 2000kg `BENCH`/`BIN`, `TRUCK` hasta 5000kg los 3).
+2. **Alcance de "vehículos disponibles para una zona" — opción (a).** `zoneHasAvailableVehicle`
+   devuelve `false` cuando la zona no tiene **ningún** vehículo `ACTIVE`, independientemente de si
+   hay incidentes pendientes o no. No depende de `assignVehicles` ni de incidentes: solo recorre
+   `vehicles` filtrando por zona (vía `zoneId` traducido a nombre, igual criterio que
+   `vehicleEligibility.ts` de `docs/feature/maps-asign-vehicle.md`) y `status === 'ACTIVE'`.
+3. **Persistencia — store propio.** `useAssignmentStore` (zustand, en `features/map/assignment/`)
+   guarda `assignments: Assignment[]` y `zoneAvailability: Record<SupportedZone, boolean>`, con una
+   acción `recompute(vehicles, assets, incidents, zonesById)` que llama a `assignVehicles` y a
+   `zoneHasAvailableVehicle` por cada una de las 5 zonas. `useSyncAssignmentStore` (hook, mismo
+   patrón que `useSyncMapStore`) dispara `recompute` cada vez que cambian `vehicles` (desde
+   `useVehiclesStore`), `assets`/`incidents` (desde `useMapStore`) o `zonesById` (desde
+   `useZonesQuery`) — igual que el resto de los stores derivados de la app, sin persistencia más
+   allá de la sesión (el mock no tiene endpoint).
+4. **Ubicación — `features/map/assignment/`.** Hoy `map` es el único consumidor real; si en el
+   futuro otra feature necesita el motor, se promueve a `shared/assignment/` en ese momento (mismo
+   criterio que el resto del proyecto: `shared/` solo cuando 2+ features lo usan).
 
-## Decisiones propuestas (a confirmar junto con los gaps)
-
-### Estructura de archivos propuesta
+### Estructura de archivos
 
 ```text
-client/src/shared/assignment/          # o features/map/assignment/, ver Gap #4
-  vehicleCompatibility.ts               # VEHICLE_ASSET_COMPATIBILITY: Record<VehicleType, AssetType[]>
+client/src/features/map/assignment/
+  vehicleCompatibility.ts               # VEHICLE_ASSET_COMPATIBILITY, ASSET_MIN_CAPACITY
   incidentTypePriority.ts               # INCIDENT_TYPE_PRIORITY: Record<IncidentType, number>
-  assignVehicles.ts                     # assignVehicles(vehicles, assets, incidents) -> Assignment[]
-  zoneHasAvailableVehicle.ts            # zoneHasAvailableVehicle(zone, ...) -> boolean, consumido por AvailabilityAlert
+  assignVehicles.ts                     # assignVehicles(vehicles, assets, incidents, zonesById) -> Assignment[]
+  zoneHasAvailableVehicle.ts            # zoneHasAvailableVehicle(zone, vehicles, zonesById) -> boolean
+  useAssignmentStore.ts                 # store zustand: assignments, zoneAvailability, recompute()
+  useSyncAssignmentStore.ts             # hook: dispara recompute() ante cambios de vehicles/assets/incidents/zonas
   vehicleCompatibility.test.ts
   incidentTypePriority.test.ts
   assignVehicles.test.ts
   zoneHasAvailableVehicle.test.ts
+  useAssignmentStore.test.ts
+  useSyncAssignmentStore.test.tsx
 ```
 
 ```ts
@@ -119,26 +120,33 @@ export interface Assignment {
 export function assignVehicles(
   vehicles: Vehicle[],
   assets: GeoTaggedAsset[],
-  incidents: AssociatedIncident[]
+  incidents: AssociatedIncident[],
+  zonesById: Map<string, string>
 ): Assignment[]
 // 1. Excluye vehículos MAINTENANCE/OUT_OF_SERVICE y activos OUT_OF_SERVICE (con sus incidentes).
 // 2. Ordena incidentes por INCIDENT_TYPE_PRIORITY (OVERFLOW > DAMAGE > LITTERING > OTHER).
-// 3. Para cada incidente, resuelve el activo asociado (o el propio incidente si no aplica) y busca
-//    vehículos compatibles por VEHICLE_ASSET_COMPATIBILITY, filtra por capacidad suficiente,
-//    ordena candidatos por (ACTIVE primero, misma zona, menor capacidad suficiente) y asigna el
-//    primero libre; lo remueve del pool de vehículos disponibles para el resto de la pasada.
+// 3. Para cada incidente:
+//    - si tiene activo asociado (associatedAssetId) y ese activo no es OUT_OF_SERVICE: los
+//      candidatos se filtran por VEHICLE_ASSET_COMPATIBILITY + ASSET_MIN_CAPACITY contra el tipo
+//      del activo, y la zona objetivo es la derivedZone del activo.
+//    - si tiene activo asociado pero está OUT_OF_SERVICE: se descarta (CA-02), no genera asignación.
+//    - si no tiene activo asociado (incidente independiente): cualquier vehículo del pool es
+//      candidato (sin restricción de tipo/capacidad), y la zona objetivo es la derivedZone del
+//      incidente — mismo criterio que `eligibleVehiclesForIncident` en la asignación manual.
+//    Ordena candidatos por (ACTIVE primero, misma zona, menor capacidad) y asigna el primero;
+//    lo remueve del pool de vehículos disponibles para el resto de la pasada.
 
 export function zoneHasAvailableVehicle(
   zone: SupportedZone,
   vehicles: Vehicle[],
-  assignments: Assignment[],
-  pendingIncidents: AssociatedIncident[]
+  zonesById: Map<string, string>
 ): boolean
+// true si existe al menos un vehículo ACTIVE cuya zona (zoneId -> nombre -> SupportedZone) es `zone`.
 ```
 
-`AvailabilityAlert` (en `features/map/components/`, ver
-[docs/feature/10-maps-create.md](./10-maps-create.md)) consume `zoneHasAvailableVehicle` por cada
-una de las 5 zonas y renderiza una alerta por cada una que devuelva `false`.
+`AvailabilityAlert` **no se construye en este cambio** (queda para cuando se aborde
+[docs/feature/10-maps-create.md](./10-maps-create.md) de forma explícita); este spec solo entrega
+`zoneHasAvailableVehicle`/`useAssignmentStore` listos para que ese componente los consuma.
 
 ## Fuera de alcance
 
@@ -155,25 +163,30 @@ una de las 5 zonas y renderiza una alerta por cada una que devuelva `false`.
   suficiente, en ese orden.
 - **CA-05:** Los incidentes se procesan en el orden `OVERFLOW > DAMAGE > LITTERING > OTHER` cuando
   compiten por los mismos vehículos.
-- **CA-06:** `zoneHasAvailableVehicle` devuelve `false` para una zona sin ningún vehículo `ACTIVE`
-  apto para sus incidentes pendientes (criterio exacto sujeto al Gap #2).
+- **CA-06:** `zoneHasAvailableVehicle` devuelve `false` para una zona sin ningún vehículo `ACTIVE`,
+  sin importar si tiene incidentes pendientes o no (Decisión confirmada #2, opción (a)).
+- **CA-07:** `useAssignmentStore.recompute` deja `assignments`/`zoneAvailability` actualizados ante
+  cualquier cambio de `vehicles`, `assets` o `incidents` (vía `useSyncAssignmentStore`).
 
 ## Plan de tests
 
-- `vehicleCompatibility.test.ts`: las 3 combinaciones exactas de la tabla.
+- `vehicleCompatibility.test.ts`: las 3 combinaciones exactas de la tabla + los 3 umbrales de
+  `ASSET_MIN_CAPACITY`.
 - `incidentTypePriority.test.ts`: orden `OVERFLOW > DAMAGE > LITTERING > OTHER`.
 - `assignVehicles.test.ts`: exclusión de vehículos/activos fuera de servicio, prioridad de selección
   (los 3 criterios en combinación y por separado), contención entre incidentes de distinta prioridad
-  compitiendo por el mismo vehículo.
-- `zoneHasAvailableVehicle.test.ts`: zona con vehículo apto disponible (`true`), zona sin ningún
-  vehículo `ACTIVE` (`false`), zona con vehículos pero todos ya asignados a incidentes de mayor
-  prioridad (`false`).
+  compitiendo por el mismo vehículo, incidente sin activo asociado (sin restricción de tipo).
+- `zoneHasAvailableVehicle.test.ts`: zona con vehículo `ACTIVE` (`true`), zona sin ningún vehículo
+  `ACTIVE` (`false`), zona con vehículos pero todos `MAINTENANCE`/`OUT_OF_SERVICE` (`false`).
+- `useAssignmentStore.test.ts`: `recompute` puebla `assignments` y `zoneAvailability` para las 5
+  zonas.
+- `useSyncAssignmentStore.test.tsx`: dispara `recompute` cuando cambian los stores de origen.
 - Cobertura ≥ 80%.
 
 ## Verificación post-implementación
 
 1. `pnpm --filter client typecheck` / `lint` / `format:check` sin errores.
 2. `pnpm --filter client test` — cobertura ≥ 80%.
-3. Integración con `AvailabilityAlert` de [docs/feature/10-maps-create.md](./10-maps-create.md)
-   verificada manualmente contra al menos un caso real del dataset mock (una zona con capacidad
-   insuficiente forzada, si el dataset generado aleatoriamente no produce el caso por sí solo).
+3. No aplica en este cambio: `AvailabilityAlert` no existe todavía en `MapPage` (queda fuera de
+   alcance, ver arriba). La verificación de integración real queda para cuando ese componente se
+   construya y consuma `useAssignmentStore`/`zoneHasAvailableVehicle`.
