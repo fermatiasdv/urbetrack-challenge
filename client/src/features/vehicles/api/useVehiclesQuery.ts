@@ -21,22 +21,36 @@ export async function fetchVehicles(): Promise<Vehicle[]> {
 
 /**
  * Fetches the vehicles list from the mock backend and hydrates the Zustand
- * store on success, following the "query hydrates store" pattern
- * (docs/specs/architecture.md#estado-global-y-data-fetching).
+ * store **once** on success, following the "query hydrates store" pattern
+ * (docs/specs/architecture.md#estado-global-y-data-fetching, "Hidratación
+ * única").
+ *
+ * The `hasHydrated` guard and the disabled refetch options below fix a real
+ * bug (2026-07-06): without them, remounting this hook (e.g. navigating away
+ * from `/vehiculos` and back) re-ran the hydration effect with the cached
+ * fetch result, silently reverting any local-only mutation (delete, edit)
+ * made after the initial load — the mock backend has no write endpoints
+ * (docs/METHODS.md), so nothing the server returns should ever overwrite the
+ * store again once it holds the user's session state.
  */
 export function useVehiclesQuery(): UseQueryResult<Vehicle[]> {
   const setVehicles = useVehiclesStore((state) => state.setVehicles)
+  const hasHydrated = useVehiclesStore((state) => state.hasHydrated)
 
   const query = useQuery({
     queryKey: ['vehicles'],
-    queryFn: fetchVehicles
+    queryFn: fetchVehicles,
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false
   })
 
   useEffect(() => {
-    if (query.data) {
+    if (query.data && !hasHydrated) {
       setVehicles(query.data)
     }
-  }, [query.data, setVehicles])
+  }, [query.data, hasHydrated, setVehicles])
 
   return query
 }

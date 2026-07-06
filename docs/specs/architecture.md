@@ -173,9 +173,9 @@ No todos los directorios son obligatorios. Cada feature define únicamente aquel
 
 Patrón ya establecido e implementado (ver [component-test-vehicles-table.md](./component-test-vehicles-table.md)), formalizado aquí para que sea explícito y consistente en toda feature nueva.
 
-- **Data-fetching (servidor):** `@tanstack/react-query` es responsable de traer los datos del backend mock (una única carga por pantalla, ver `verified-scope.md` §6.1). El `QueryClientProvider` se monta a nivel `app/` (hoy en `main.tsx`).
-- **Estado global (cliente):** `zustand` es la **fuente única de verdad** sobre la que trabajan mapa, tablas, filtros y modales de una feature. React Query hidrata el store al resolver la carga; a partir de ahí las mutaciones locales (p. ej. edición de placa de un vehículo) se aplican sobre el store y todas las vistas suscriptas se actualizan en tiempo real.
-- **Escrituras sin backend:** el mock no expone `PUT`/`PATCH`/`DELETE` (ver `docs/METHODS.md` → "Limitaciones conocidas"). Por eso las operaciones de escritura (edición hoy; ABMC completo a futuro) se consideran exitosas al actualizar el store, sin llamada de escritura al servidor (`verified-scope.md` §7.4).
+- **Data-fetching (servidor):** `@tanstack/react-query` es responsable de traer los datos del backend mock (una única carga **por sesión de la app**, no una carga por cada vez que se monta la pantalla — ver "Hidratación única" más abajo, que aclara una ambigüedad de `verified-scope.md` §6.1). El `QueryClientProvider` se monta a nivel `app/` (hoy en `main.tsx`).
+- **Estado global (cliente):** `zustand` es la **fuente única de verdad** sobre la que trabajan mapa, tablas, filtros y modales de una feature. React Query hidrata el store la **primera vez** que la carga resuelve; a partir de ahí las mutaciones locales (p. ej. edición de placa de un vehículo, borrado de un registro) se aplican sobre el store y todas las vistas suscriptas se actualizan en tiempo real, **sin que un remount o un refetch de la query las revierta** (ver "Hidratación única").
+- **Escrituras sin backend:** el mock no expone `PUT`/`PATCH`/`DELETE` (ver `docs/METHODS.md` → "Limitaciones conocidas"). Por eso las operaciones de escritura (edición, borrado hoy; ABMC completo a futuro) se consideran exitosas al actualizar el store, sin llamada de escritura al servidor (`verified-scope.md` §7.4). Como el servidor nunca refleja estas escrituras, **el store, una vez hidratado, es la única fuente de verdad para toda la sesión** — no puede resincronizarse contra el backend sin perder esas mutaciones.
 - **Ubicación del estado:** cada store pertenece a su feature (`features/<feature>/store/`). `app/store/` se reserva para estado verdaderamente transversal a varias features, como excepción y no como regla.
 
 ---
@@ -229,11 +229,29 @@ Ambas ya están declaradas en `client/package.json`; no se agregan alternativas 
 ### Patrón: query hidrata store
 
 1. Un hook de **query** (`api/` de la feature, p. ej. `useVehiclesQuery`) usa `useQuery` de TanStack Query para pedir datos al backend (`queryKey`, `queryFn`).
-2. En `useEffect`, cuando `query.data` cambia, se llama al setter del store (p. ej. `setVehicles`) para **hidratar** el store de Zustand.
-3. El **store de Zustand es la fuente de verdad** para los componentes de UI: leen y mutan contra el store (ej. `updatePlate`), no directamente contra el resultado de la query.
+2. En `useEffect`, cuando `query.data` está disponible **y el store todavía no fue hidratado**, se llama al setter del store (p. ej. `setVehicles`) para hidratarlo. El setter marca el store como hidratado (flag `hasHydrated`, ver punto 5); una vez en `true`, nuevas resoluciones de `query.data` **no vuelven a pisar el store**.
+3. El **store de Zustand es la fuente de verdad** para los componentes de UI: leen y mutan contra el store (ej. `updatePlate`, `removeVehicle`), no directamente contra el resultado de la query.
 4. `query.isLoading` / `query.isError` sí se consumen directamente desde los componentes (para skeletons/estados de error) — no se duplican en el store.
+5. El hook de query **deshabilita el refetch automático** de TanStack Query (`staleTime: Infinity`, `refetchOnMount: false`, `refetchOnWindowFocus: false`, `refetchOnReconnect: false`): no tiene sentido re-pedir un dataset que el mock nunca cambia entre requests, y un refetch en segundo plano sería, en el mejor caso, trabajo de red desperdiciado.
 
-Esto separa dos responsabilidades distintas: TanStack Query gestiona el ciclo de vida de la petición (fetch, retry, cache), Zustand gestiona el estado derivado que la UI edita localmente (ej. edición inline de una patente) sin volver a pegarle al backend en cada tecla.
+Esto separa dos responsabilidades distintas: TanStack Query gestiona el ciclo de vida de la petición inicial (fetch, retry, cache), Zustand gestiona el estado derivado que la UI edita localmente (ej. edición inline de una patente, borrado de un registro) sin volver a pegarle al backend en cada acción.
+
+#### Hidratación única (bug real corregido — 2026-07-06)
+
+**Síntoma observado:** al eliminar un vehículo desde `VehiclesTable` (`docs/feature/03-vehicles-table.md`), navegar a otra pantalla y volver a "Vehículos", el registro eliminado reaparecía — el store volvía a mostrar el dataset original completo.
+
+**Causa raíz:** `VehiclesPage` desmonta y vuelve a montar `useVehiclesQuery` en cada navegación. Antes de esta corrección, el `useEffect` de hidratación no tenía guarda: corría en **cada mount** en el que `query.data` fuera verdadero, incluyendo cuando el dato venía de la **caché** de TanStack Query (poblada por la carga original, antes del borrado). El resultado: el `setVehicles(query.data)` del segundo mount pisaba el store — que ya reflejaba el borrado local — con el snapshot original cacheado, sin que mediara ningún refetch de red.
+
+Esto no es un problema puntual de "Eliminar": es un defecto del patrón general "query hidrata store" tal como estaba descripto (paso 2 original, sin guarda), y afecta a **cualquier mutación local sin persistencia en backend** (edición de placa, y a futuro cualquier ABMC de `assets`/`incidents`) en cualquier feature que remonte su hook de query al navegar.
+
+**Decisión (fuente de verdad, aplica a toda feature nueva o existente que use este patrón):**
+
+1. Cada store que se hidrata desde una query expone un flag `hasHydrated: boolean` (default `false`), que su `setVehicles`-equivalente pone en `true`.
+2. El `useEffect` de hidratación solo llama al setter si `!hasHydrated`, sin importar cuántas veces se remonte el hook o cuántas veces resuelva la query durante la sesión.
+3. La query deshabilita su refetch automático (punto 5 de arriba) — es una carga *bootstrap* de una sola vez por sesión de la app, no "una carga por cada vez que se abre la pantalla" (aclara la ambigüedad de `verified-scope.md` §6.1, que hablaba de "una única carga al cargar la pantalla" sin precisar si eso significa una vez por sesión o una vez por cada apertura de pantalla — **queda resuelto: una vez por sesión**).
+4. Esta regla es **general**, no específica de `vehicles`: cualquier feature futura (`assets`, `incidents`) que hidrate su store desde una query y luego permita mutaciones locales sin backend debe replicar el mismo guard `hasHydrated`, por la misma razón (el servidor nunca refleja la mutación, así que resincronizar sin guarda siempre la revierte).
+
+Implementado en `client/src/features/vehicles/store/useVehiclesStore.ts` (`hasHydrated`) y `client/src/features/vehicles/api/useVehiclesQuery.ts` (guarda + opciones de refetch). Ver también `docs/verified-scope.md` §10.13.
 
 ### Dónde vive cada store
 
