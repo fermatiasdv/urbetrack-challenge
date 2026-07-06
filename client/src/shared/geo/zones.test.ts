@@ -19,10 +19,10 @@ describe('ZONES', () => {
   it('has no intersection between any pair of zones (CA-02)', () => {
     const entries = Object.entries(ZONES)
 
-    for (let i = 0; i < entries.length; i += 1) {
-      for (let j = i + 1; j < entries.length; j += 1) {
-        const [nameA, boxA] = entries[i]
-        const [nameB, boxB] = entries[j]
+    for (const [nameA, boxA] of entries) {
+      for (const [nameB, boxB] of entries) {
+        if (nameA >= nameB) continue // unordered pairs only, skip self-comparison
+
         expect.soft(overlaps(boxA, boxB), `${nameA} overlaps ${nameB}`).toBe(false)
       }
     }
