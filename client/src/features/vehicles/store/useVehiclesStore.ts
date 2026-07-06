@@ -5,6 +5,7 @@ export interface VehiclesState {
   vehicles: Vehicle[]
   hasHydrated: boolean
   setVehicles: (vehicles: Vehicle[]) => void
+  addVehicle: (vehicle: Vehicle) => void
   removeVehicle: (id: string) => void
   updateVehicle: (id: string, changes: Partial<Vehicle>) => void
 }
@@ -33,6 +34,7 @@ export const useVehiclesStore = create<VehiclesState>((set) => ({
   vehicles: [],
   hasHydrated: false,
   setVehicles: (vehicles) => set({ vehicles, hasHydrated: true }),
+  addVehicle: (vehicle) => set((state) => ({ vehicles: [...state.vehicles, vehicle] })),
   removeVehicle: (id) =>
     set((state) => ({ vehicles: state.vehicles.filter((vehicle) => vehicle.id !== id) })),
   updateVehicle: (id, changes) =>

@@ -2,7 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
-import { fetchVehicles, useVehiclesQuery } from './useVehiclesQuery'
+import { createVehicle, fetchVehicles, useVehiclesQuery } from './useVehiclesQuery'
 import { useVehiclesStore } from '../store/useVehiclesStore'
 import type { Vehicle } from '../../../shared/types/domain.types'
 
@@ -90,5 +90,44 @@ describe('useVehiclesQuery', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(useVehiclesStore.getState().vehicles).toEqual([])
+  })
+})
+
+describe('createVehicle', () => {
+  const PAYLOAD = {
+    plate: 'ABC123',
+    type: 'TRUCK' as const,
+    capacity: 5000,
+    status: 'ACTIVE' as const,
+    zoneId: '1'
+  }
+
+  it('POSTs the payload and returns the created vehicle', async () => {
+    const created: Vehicle = { id: '99', ...PAYLOAD }
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: () => Promise.resolve(created)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(createVehicle(PAYLOAD)).resolves.toEqual(created)
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:3000/vehicles',
+      expect.objectContaining({ method: 'POST' })
+    )
+  })
+
+  it('throws when the response is not ok', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: () => Promise.resolve(null)
+      })
+    )
+
+    await expect(createVehicle(PAYLOAD)).rejects.toThrow('Failed to create vehicle: 400')
   })
 })

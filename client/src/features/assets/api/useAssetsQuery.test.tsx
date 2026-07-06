@@ -2,7 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
-import { fetchAssets, useAssetsQuery } from './useAssetsQuery'
+import { createAsset, fetchAssets, useAssetsQuery } from './useAssetsQuery'
 import { useAssetsStore } from '../store/useAssetsStore'
 import type { Asset } from '../../../shared/types/domain.types'
 
@@ -95,5 +95,45 @@ describe('useAssetsQuery', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(useAssetsStore.getState().assets).toEqual([])
+  })
+})
+
+describe('createAsset', () => {
+  const PAYLOAD = {
+    type: 'BIN' as const,
+    status: 'OK' as const,
+    address: 'Av. Corrientes 1',
+    zoneId: '1',
+    lat: -34.6037,
+    lng: -58.3816
+  }
+
+  it('POSTs the payload and returns the created asset', async () => {
+    const created: Asset = { id: '99', ...PAYLOAD }
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: () => Promise.resolve(created)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(createAsset(PAYLOAD)).resolves.toEqual(created)
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:3000/assets',
+      expect.objectContaining({ method: 'POST' })
+    )
+  })
+
+  it('throws when the response is not ok', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: () => Promise.resolve(null)
+      })
+    )
+
+    await expect(createAsset(PAYLOAD)).rejects.toThrow('Failed to create asset: 400')
   })
 })

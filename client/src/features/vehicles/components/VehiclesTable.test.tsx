@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { Theme } from '@radix-ui/themes'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UseQueryResult } from '@tanstack/react-query'
@@ -82,5 +82,26 @@ describe('VehiclesTable', () => {
     renderTable()
 
     expect(screen.queryAllByTestId('vehicle-row')).toHaveLength(0)
+  })
+
+  it('paginates at 15 rows per page and navigates to the next page', () => {
+    const manyVehicles: Vehicle[] = Array.from({ length: 17 }, (_, index) => ({
+      id: `${index + 1}`,
+      plate: `PLT${String(index).padStart(3, '0')}`,
+      type: 'TRUCK',
+      status: 'ACTIVE',
+      capacity: 1000,
+      zoneId: '1'
+    }))
+    useVehiclesStore.getState().setVehicles(manyVehicles)
+    renderTable()
+
+    expect(screen.getAllByTestId('vehicle-row')).toHaveLength(15)
+    expect(screen.getByText('Mostrando 1–15 de 17')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByLabelText('Página siguiente'))
+
+    expect(screen.getAllByTestId('vehicle-row')).toHaveLength(2)
+    expect(screen.getByText('Mostrando 16–17 de 17')).toBeInTheDocument()
   })
 })

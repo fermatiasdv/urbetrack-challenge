@@ -25,4 +25,10 @@ describe('useVehicleModalStore', () => {
     expect(useVehicleModalStore.getState().vehicleId).toBeNull()
     expect(useVehicleModalStore.getState().mode).toBeNull()
   })
+
+  it('openCreate sets mode to create with no vehicleId', () => {
+    useVehicleModalStore.getState().openCreate()
+
+    expect(useVehicleModalStore.getState()).toMatchObject({ vehicleId: null, mode: 'create' })
+  })
 })

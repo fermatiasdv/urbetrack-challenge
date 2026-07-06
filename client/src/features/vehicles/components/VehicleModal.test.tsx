@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Theme } from '@radix-ui/themes'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { VehicleModal } from './VehicleModal'
 import { useVehiclesStore } from '../store/useVehiclesStore'
@@ -156,5 +156,105 @@ describe('VehicleModal', () => {
 
     expect(useVehicleModalStore.getState().vehicleId).toBeNull()
     expect(useVehiclesStore.getState().vehicles[0]).toEqual(VEHICLE)
+  })
+})
+
+describe('VehicleModal create mode', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
+    await user.type(screen.getByLabelText('Patente / Plate'), 'DEF456')
+    await user.click(screen.getByRole('combobox', { name: 'Tipo' }))
+    await user.click(await screen.findByRole('option', { name: 'Camión' }))
+    await user.type(screen.getByLabelText('Capacidad (KG)'), '3000')
+    await user.click(screen.getByRole('combobox', { name: 'Estado' }))
+    await user.click(await screen.findByRole('option', { name: 'Activo' }))
+    await user.click(screen.getByRole('combobox', { name: 'Zona' }))
+    await user.click(await screen.findByRole('option', { name: 'Palermo' }))
+  }
+
+  it('opens the "Agregar Vehículo" form with "Cancelar"/"Crear"', () => {
+    useVehicleModalStore.getState().openCreate()
+    renderModal()
+
+    expect(screen.getByText('Agregar Vehículo')).toBeInTheDocument()
+    expect(screen.getByLabelText('Patente / Plate')).toHaveValue('')
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Crear' })).toBeInTheDocument()
+  })
+
+  it('blocks "Crear" and shows a validation error for an invalid plate', async () => {
+    const user = userEvent.setup()
+    useVehicleModalStore.getState().openCreate()
+    renderModal()
+
+    await user.type(screen.getByLabelText('Patente / Plate'), 'INVALID')
+    await user.click(screen.getByRole('button', { name: 'Crear' }))
+
+    expect(screen.getByText('Formato de placa inválido')).toBeInTheDocument()
+    expect(useVehicleModalStore.getState().mode).toBe('create')
+  })
+
+  it('creates the vehicle via POST, adds it to the store and closes the modal', async () => {
+    const user = userEvent.setup()
+    const created: Vehicle = {
+      id: '2',
+      plate: 'DEF456',
+      type: 'TRUCK',
+      status: 'ACTIVE',
+      capacity: 3000,
+      zoneId: '1'
+    }
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: () => Promise.resolve(created)
+      })
+    )
+    useVehicleModalStore.getState().openCreate()
+    renderModal()
+
+    await fillValidForm(user)
+    await user.click(screen.getByRole('button', { name: 'Crear' }))
+
+    await waitFor(() => expect(useVehicleModalStore.getState().mode).toBeNull())
+    expect(useVehiclesStore.getState().vehicles).toContainEqual(created)
+  })
+
+  it('shows an error and keeps the modal open when the POST fails', async () => {
+    const user = userEvent.setup()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve(null)
+      })
+    )
+    useVehicleModalStore.getState().openCreate()
+    renderModal()
+
+    await fillValidForm(user)
+    await user.click(screen.getByRole('button', { name: 'Crear' }))
+
+    expect(await screen.findByText('No fue posible crear el vehículo.')).toBeInTheDocument()
+    expect(useVehicleModalStore.getState().mode).toBe('create')
+    expect(useVehiclesStore.getState().vehicles).toEqual([VEHICLE])
+  })
+
+  it('"Cancelar" closes the create form without creating anything', async () => {
+    const user = userEvent.setup()
+    useVehicleModalStore.getState().openCreate()
+    renderModal()
+
+    await user.type(screen.getByLabelText('Patente / Plate'), 'DEF456')
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+    expect(useVehicleModalStore.getState().mode).toBeNull()
+    expect(useVehiclesStore.getState().vehicles).toEqual([VEHICLE])
   })
 })

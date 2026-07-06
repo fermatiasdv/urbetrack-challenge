@@ -1,9 +1,10 @@
 import { useEffect, useState, type JSX } from 'react'
-import { Button, Dialog, Flex, Grid, IconButton, Select, Text } from '@radix-ui/themes'
+import { Button, Dialog, Flex, Grid, IconButton, Select, Text, TextField } from '@radix-ui/themes'
 import { Home, Info, MapPin, X } from 'lucide-react'
-import type { Asset, AssetStatus } from '../../../shared/types/domain.types'
+import type { Asset, AssetStatus, AssetType } from '../../../shared/types/domain.types'
 import { useAssetModalStore, type AssetModalMode } from '../store/useAssetModalStore'
 import { useAssetsStore } from '../store/useAssetsStore'
+import { createAsset } from '../api/useAssetsQuery'
 import { useZonesQuery } from '../../../shared/services/useZonesQuery'
 import { zoneNameFor } from '../../../shared/utils/zoneNameFor'
 import { StatusBadge } from '../../../shared/components/StatusBadge'
@@ -15,10 +16,30 @@ import {
 } from '../utils/assetFormat'
 import { assetModalContextBoxStyle } from './assetModal.styles'
 import { assetModalFormSchema } from '../schemas/assetModalSchema'
+import { assetCreateFormSchema } from '../schemas/assetCreateSchema'
 
 type ViewMode = 'details' | 'edit'
 
 const ASSET_STATUSES: AssetStatus[] = ['OK', 'DAMAGED', 'FULL', 'OUT_OF_SERVICE']
+const ASSET_TYPES: AssetType[] = ['BIN', 'CONTAINER', 'BENCH']
+
+interface CreateFormDraft {
+  type: AssetType | ''
+  status: AssetStatus | ''
+  address: string
+  zoneId: string
+  lat: string
+  lng: string
+}
+
+const EMPTY_CREATE_DRAFT: CreateFormDraft = {
+  type: '',
+  status: '',
+  address: '',
+  zoneId: '',
+  lat: '',
+  lng: ''
+}
 
 function initialViewMode(mode: AssetModalMode | null): ViewMode {
   return mode === 'edit' ? 'edit' : 'details'
@@ -41,6 +62,7 @@ export function AssetModal(): JSX.Element | null {
   const close = useAssetModalStore((state) => state.close)
   const assets = useAssetsStore((state) => state.assets)
   const updateAsset = useAssetsStore((state) => state.updateAsset)
+  const addAsset = useAssetsStore((state) => state.addAsset)
   const { data: zones } = useZonesQuery()
 
   const foundAsset = assets.find((candidate) => candidate.id === assetId) ?? null
@@ -48,6 +70,10 @@ export function AssetModal(): JSX.Element | null {
   const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode(requestedMode))
   const [statusDraft, setStatusDraft] = useState<AssetStatus>('OK')
   const [statusError, setStatusError] = useState<string | null>(null)
+  const [createDraft, setCreateDraft] = useState<CreateFormDraft>(EMPTY_CREATE_DRAFT)
+  const [createErrors, setCreateErrors] = useState<Partial<Record<keyof CreateFormDraft, string>>>(
+    {}
+  )
   const [isSaving, setIsSaving] = useState(false)
   const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(
     null
@@ -55,8 +81,16 @@ export function AssetModal(): JSX.Element | null {
 
   // Reset all local/draft state whenever a (possibly different) asset modal
   // is opened, so a leftover draft from a previous asset never leaks into
-  // the next one (same rationale as `VehicleModal`).
+  // the next one (same rationale as `VehicleModal`). The `'create'` mode
+  // resets the create form instead.
   useEffect(() => {
+    if (requestedMode === 'create') {
+      setCreateDraft(EMPTY_CREATE_DRAFT)
+      setCreateErrors({})
+      setFeedback(null)
+      setIsSaving(false)
+      return
+    }
     if (foundAsset) {
       setViewMode(initialViewMode(requestedMode))
       setStatusDraft(foundAsset.status)
@@ -65,15 +99,254 @@ export function AssetModal(): JSX.Element | null {
       setIsSaving(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assetId])
+  }, [assetId, requestedMode])
 
   // An `assetId` was set but no longer matches any asset in the store (e.g.
   // it was deleted): close instead of rendering an empty modal.
   useEffect(() => {
-    if (assetId !== null && foundAsset === null) {
+    if (requestedMode !== 'create' && assetId !== null && foundAsset === null) {
       close()
     }
-  }, [assetId, foundAsset, close])
+  }, [requestedMode, assetId, foundAsset, close])
+
+  if (requestedMode === null) {
+    return null
+  }
+
+  function handleOpenChangeCreate(open: boolean): void {
+    if (!open) {
+      close()
+    }
+  }
+
+  async function handleCreate(): Promise<void> {
+    const result = assetCreateFormSchema.safeParse({
+      type: createDraft.type,
+      status: createDraft.status,
+      address: createDraft.address,
+      zoneId: createDraft.zoneId,
+      lat: createDraft.lat,
+      lng: createDraft.lng
+    })
+
+    if (!result.success) {
+      const nextErrors: Partial<Record<keyof CreateFormDraft, string>> = {}
+      for (const issue of result.error.issues) {
+        const field = issue.path[0] as keyof CreateFormDraft
+        nextErrors[field] = issue.message
+      }
+      setCreateErrors(nextErrors)
+      return
+    }
+
+    setCreateErrors({})
+    setIsSaving(true)
+    try {
+      const created: Asset = await createAsset(result.data)
+      addAsset(created)
+      setIsSaving(false)
+      close()
+    } catch {
+      setFeedback({ tone: 'error', message: 'No fue posible crear el activo.' })
+      setIsSaving(false)
+    }
+  }
+
+  if (requestedMode === 'create') {
+    return (
+      <Dialog.Root open onOpenChange={handleOpenChangeCreate}>
+        <Dialog.Content maxWidth="480px">
+          <Flex justify="between" align="center" mb="2">
+            <Dialog.Title mb="0">Agregar Activo</Dialog.Title>
+            <Dialog.Close>
+              <IconButton variant="ghost" color="gray" aria-label="Cerrar modal">
+                <X size={18} aria-hidden />
+              </IconButton>
+            </Dialog.Close>
+          </Flex>
+
+          <Dialog.Description size="2" color="gray" mb="4">
+            Cargá los datos del nuevo activo urbano.
+          </Dialog.Description>
+
+          <Flex direction="column" gap="4">
+            <Grid columns="2" gap="4">
+              <Flex direction="column" gap="1">
+                <Text as="label" htmlFor="asset-create-type" size="2" color="gray">
+                  Tipo
+                </Text>
+                <Select.Root
+                  value={createDraft.type}
+                  onValueChange={(value) => {
+                    setCreateDraft((draft) => ({ ...draft, type: value as AssetType }))
+                    setCreateErrors((errors) => ({ ...errors, type: undefined }))
+                  }}
+                >
+                  <Select.Trigger
+                    id="asset-create-type"
+                    aria-label="Tipo"
+                    placeholder="Seleccioná un tipo"
+                  />
+                  <Select.Content>
+                    {ASSET_TYPES.map((type) => (
+                      <Select.Item key={type} value={type}>
+                        {assetTypeLabel(type)}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+                {createErrors.type ? (
+                  <Text size="1" color="red">
+                    {createErrors.type}
+                  </Text>
+                ) : null}
+              </Flex>
+
+              <Flex direction="column" gap="1">
+                <Text as="label" htmlFor="asset-create-status" size="2" color="gray">
+                  Estado
+                </Text>
+                <Select.Root
+                  value={createDraft.status}
+                  onValueChange={(value) => {
+                    setCreateDraft((draft) => ({ ...draft, status: value as AssetStatus }))
+                    setCreateErrors((errors) => ({ ...errors, status: undefined }))
+                  }}
+                >
+                  <Select.Trigger
+                    id="asset-create-status"
+                    aria-label="Estado"
+                    placeholder="Seleccioná un estado"
+                  />
+                  <Select.Content>
+                    {ASSET_STATUSES.map((status) => (
+                      <Select.Item key={status} value={status}>
+                        {assetStatusLabel(status)}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+                {createErrors.status ? (
+                  <Text size="1" color="red">
+                    {createErrors.status}
+                  </Text>
+                ) : null}
+              </Flex>
+            </Grid>
+
+            <Flex direction="column" gap="1">
+              <Text as="label" htmlFor="asset-create-address" size="2" color="gray">
+                Dirección
+              </Text>
+              <TextField.Root
+                id="asset-create-address"
+                placeholder="Av. Corrientes 1234"
+                value={createDraft.address}
+                onChange={(event) => {
+                  setCreateDraft((draft) => ({ ...draft, address: event.target.value }))
+                  setCreateErrors((errors) => ({ ...errors, address: undefined }))
+                }}
+              />
+              {createErrors.address ? (
+                <Text size="1" color="red">
+                  {createErrors.address}
+                </Text>
+              ) : null}
+            </Flex>
+
+            <Flex direction="column" gap="1">
+              <Text as="label" htmlFor="asset-create-zone" size="2" color="gray">
+                Zona
+              </Text>
+              <Select.Root
+                value={createDraft.zoneId}
+                onValueChange={(value) => {
+                  setCreateDraft((draft) => ({ ...draft, zoneId: value }))
+                  setCreateErrors((errors) => ({ ...errors, zoneId: undefined }))
+                }}
+              >
+                <Select.Trigger
+                  id="asset-create-zone"
+                  aria-label="Zona"
+                  placeholder="Seleccioná una zona"
+                />
+                <Select.Content>
+                  {(zones ?? []).map((zone) => (
+                    <Select.Item key={zone.id} value={zone.id}>
+                      {zone.name}
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
+              {createErrors.zoneId ? (
+                <Text size="1" color="red">
+                  {createErrors.zoneId}
+                </Text>
+              ) : null}
+            </Flex>
+
+            <Grid columns="2" gap="4">
+              <Flex direction="column" gap="1">
+                <Text as="label" htmlFor="asset-create-lat" size="2" color="gray">
+                  Latitud
+                </Text>
+                <TextField.Root
+                  id="asset-create-lat"
+                  type="number"
+                  placeholder="-34.6037"
+                  value={createDraft.lat}
+                  onChange={(event) => {
+                    setCreateDraft((draft) => ({ ...draft, lat: event.target.value }))
+                    setCreateErrors((errors) => ({ ...errors, lat: undefined }))
+                  }}
+                />
+                {createErrors.lat ? (
+                  <Text size="1" color="red">
+                    {createErrors.lat}
+                  </Text>
+                ) : null}
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text as="label" htmlFor="asset-create-lng" size="2" color="gray">
+                  Longitud
+                </Text>
+                <TextField.Root
+                  id="asset-create-lng"
+                  type="number"
+                  placeholder="-58.3816"
+                  value={createDraft.lng}
+                  onChange={(event) => {
+                    setCreateDraft((draft) => ({ ...draft, lng: event.target.value }))
+                    setCreateErrors((errors) => ({ ...errors, lng: undefined }))
+                  }}
+                />
+                {createErrors.lng ? (
+                  <Text size="1" color="red">
+                    {createErrors.lng}
+                  </Text>
+                ) : null}
+              </Flex>
+            </Grid>
+          </Flex>
+
+          {feedback ? (
+            <Text size="2" color={feedback.tone === 'success' ? 'green' : 'red'} mt="4" as="p">
+              {feedback.message}
+            </Text>
+          ) : null}
+
+          <Flex justify="end" gap="3" mt="5">
+            <Button variant="soft" color="gray" onClick={() => close()}>
+              Cancelar
+            </Button>
+            <Button onClick={() => void handleCreate()} disabled={isSaving}>
+              Crear
+            </Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+    )
+  }
 
   if (assetId === null || foundAsset === null) {
     return null

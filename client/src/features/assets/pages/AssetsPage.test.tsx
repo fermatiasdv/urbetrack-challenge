@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { AssetsPage } from './AssetsPage'
 import { useAssetsQuery } from '../api/useAssetsQuery'
+import { useAssetModalStore } from '../store/useAssetModalStore'
 import type { Asset } from '../../../shared/types/domain.types'
 
 vi.mock('../api/useAssetsQuery')
@@ -55,9 +56,9 @@ describe('AssetsPage', () => {
     expect(screen.getByTestId('assets-table')).toBeInTheDocument()
   })
 
-  it('logs a placeholder message when "Agregar Activo" is clicked', async () => {
+  it('opens the create modal when "Agregar Activo" is clicked', async () => {
     const user = userEvent.setup()
-    const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined)
+    useAssetModalStore.setState({ assetId: null, mode: null })
 
     mockedUseAssetsQuery.mockReturnValue({
       isLoading: false
@@ -67,11 +68,6 @@ describe('AssetsPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Agregar Activo' }))
 
-    expect(consoleInfoSpy).toHaveBeenCalledTimes(1)
-    expect(consoleInfoSpy).toHaveBeenCalledWith(
-      'Agregar Activo: modal de alta pendiente de un spec futuro'
-    )
-
-    consoleInfoSpy.mockRestore()
+    expect(useAssetModalStore.getState()).toMatchObject({ assetId: null, mode: 'create' })
   })
 })

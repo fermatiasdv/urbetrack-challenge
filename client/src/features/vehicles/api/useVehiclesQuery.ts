@@ -20,6 +20,34 @@ export async function fetchVehicles(): Promise<Vehicle[]> {
 }
 
 /**
+ * Creates a new vehicle against the mock backend
+ * (docs/feature/09-pagination-and-create-modal.md, "Decisiones propuestas" #4).
+ * Unlike edit/delete, `POST /vehicles` exists and is implemented
+ * (`api/src/controllers/vehicles.controller.ts`), so the alta calls it for
+ * real instead of only mutating the store — the response carries the
+ * server-issued `id`.
+ */
+export async function createVehicle(payload: {
+  plate: string
+  type: Vehicle['type']
+  capacity: number
+  status: Vehicle['status']
+  zoneId: string
+}): Promise<Vehicle> {
+  const response = await fetch(`${API_BASE_URL}/vehicles`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to create vehicle: ${response.status}`)
+  }
+
+  return (await response.json()) as Vehicle
+}
+
+/**
  * Fetches the vehicles list from the mock backend and hydrates the Zustand
  * store **once** on success, following the "query hydrates store" pattern
  * (docs/specs/architecture.md#estado-global-y-data-fetching, "Hidratación

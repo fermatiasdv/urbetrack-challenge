@@ -3,17 +3,20 @@ import { Skeleton } from '@radix-ui/themes'
 import { Plus } from 'lucide-react'
 import { HeaderPage, type HeaderPageProps } from '../../../shared/components/HeaderPage'
 import { useVehiclesQuery } from '../api/useVehiclesQuery'
+import { useVehicleModalStore } from '../store/useVehicleModalStore'
 import { VehicleModal } from '../components/VehicleModal'
 import { VehicleStatusCards } from '../components/VehicleStatusCards'
 import { VehiclesFilterBar } from '../components/VehiclesFilterBar'
 import { VehiclesTable } from '../components/VehiclesTable'
 
 /**
- * Placeholder: el modal de alta de vehículo es un spec futuro
- * (docs/feature/05-vehicles-header.md, "Fuera de alcance").
+ * Opens the "Agregar Vehículo" create modal
+ * (docs/feature/09-pagination-and-create-modal.md, "Decisiones propuestas" #5):
+ * replaces the previous placeholder now that the modal supports a `'create'`
+ * mode.
  */
 function handleAddVehicle(): void {
-  console.info('Agregar Vehículo: modal de alta pendiente de un spec futuro')
+  useVehicleModalStore.getState().openCreate()
 }
 
 const vehiclesHeaderProps: HeaderPageProps = {

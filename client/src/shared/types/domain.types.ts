@@ -43,3 +43,23 @@ export interface Asset {
   address: string
   zoneId: string
 }
+
+/**
+ * Incident domain types (client-side), mirrored from the mock backend
+ * (`api/src/schemas/incident.schema.ts`, `api/src/data/incidents.ts`).
+ * See docs/feature/08-incidents-page.md.
+ */
+export type IncidentType = 'OVERFLOW' | 'DAMAGE' | 'LITTERING' | 'OTHER'
+
+export type IncidentStatus = 'REPORTED' | 'IN_PROGRESS' | 'RESOLVED'
+
+export interface Incident {
+  id: string
+  type: IncidentType
+  status: IncidentStatus
+  description: string
+  lat: number
+  lng: number
+  zoneId: string
+  createdAt: string
+}
