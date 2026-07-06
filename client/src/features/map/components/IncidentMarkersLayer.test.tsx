@@ -1,15 +1,26 @@
 import { render, screen } from '@testing-library/react'
 import { Theme } from '@radix-ui/themes'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
+import type { UseQueryResult } from '@tanstack/react-query'
 import { IncidentMarkersLayer } from './IncidentMarkersLayer'
 import { useMapStore } from '../store/useMapStore'
+import { useVehiclesStore } from '../../vehicles/store/useVehiclesStore'
+import { useAssignmentsStore } from '../../../shared/services/assignments/useAssignmentsStore'
+import { useZonesQuery } from '../../../shared/services/useZonesQuery'
 import type { AssociatedIncident } from '../types'
+import type { Vehicle, Zone } from '../../../shared/types/domain.types'
 
 vi.mock('react-leaflet', () => ({
   Marker: ({ children }: { children: ReactNode }) => <div data-testid="marker">{children}</div>,
-  Tooltip: ({ children }: { children: ReactNode }) => <div data-testid="tooltip">{children}</div>
+  Tooltip: ({ children }: { children: ReactNode }) => <div data-testid="tooltip">{children}</div>,
+  Popup: ({ children }: { children: ReactNode }) => <div data-testid="popup">{children}</div>
 }))
+
+vi.mock('../../../shared/services/useZonesQuery')
+
+const mockedUseZonesQuery = vi.mocked(useZonesQuery)
+const ZONES: Zone[] = [{ id: '1', name: 'Microcentro' }]
 
 const INDEPENDENT_INCIDENT: AssociatedIncident = {
   id: 'incident-1',
@@ -30,6 +41,21 @@ const ASSOCIATED_INCIDENT: AssociatedIncident = {
   associatedAssetId: 'asset-1'
 }
 
+const REPORTED_INDEPENDENT: AssociatedIncident = {
+  ...INDEPENDENT_INCIDENT,
+  id: 'incident-3',
+  status: 'REPORTED'
+}
+
+const ACTIVE_VAN: Vehicle = {
+  id: 'v1',
+  plate: 'DEF456',
+  type: 'VAN',
+  status: 'ACTIVE',
+  capacity: 2000,
+  zoneId: '1'
+}
+
 function renderLayer() {
   return render(
     <Theme>
@@ -37,6 +63,12 @@ function renderLayer() {
     </Theme>
   )
 }
+
+beforeEach(() => {
+  useVehiclesStore.setState({ vehicles: [] })
+  useAssignmentsStore.setState({ assetToVehicle: {}, incidentToVehicle: {} })
+  mockedUseZonesQuery.mockReturnValue({ data: ZONES } as unknown as UseQueryResult<Zone[]>)
+})
 
 describe('IncidentMarkersLayer', () => {
   it('renders only incidents without an associated asset', () => {
@@ -54,5 +86,23 @@ describe('IncidentMarkersLayer', () => {
     renderLayer()
 
     expect(screen.queryAllByTestId('marker')).toHaveLength(0)
+  })
+
+  it('offers the assignment control for a REPORTED independent incident (any active vehicle in zone)', () => {
+    useVehiclesStore.setState({ vehicles: [ACTIVE_VAN] })
+    useMapStore.setState({ incidents: [REPORTED_INDEPENDENT] })
+
+    renderLayer()
+
+    expect(screen.getByLabelText('Vehículo asignado')).toBeInTheDocument()
+  })
+
+  it('does not offer the assignment control for a non-REPORTED incident', () => {
+    useVehiclesStore.setState({ vehicles: [ACTIVE_VAN] })
+    useMapStore.setState({ incidents: [INDEPENDENT_INCIDENT] })
+
+    renderLayer()
+
+    expect(screen.queryByLabelText('Vehículo asignado')).not.toBeInTheDocument()
   })
 })
