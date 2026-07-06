@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import { fetchZones, useZonesQuery } from './useZonesQuery'
-import type { Zone } from '../types/zone.types'
+import type { Zone } from '../../../shared/types/domain.types'
 
 const ZONES: Zone[] = [
   { id: '1', name: 'Microcentro' },

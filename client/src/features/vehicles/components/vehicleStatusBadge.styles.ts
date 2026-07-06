@@ -7,7 +7,7 @@
  */
 import type { CSSProperties } from 'react'
 import { designTokens } from '../../../app/styles/tokens'
-import type { VehicleStatus } from '../types/vehicle.types'
+import type { VehicleStatus } from '../../../shared/types/domain.types'
 
 interface StatusBadgeStyle {
   badge: CSSProperties

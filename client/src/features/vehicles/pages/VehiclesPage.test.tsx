@@ -1,10 +1,11 @@
 import { render, screen } from '@testing-library/react'
 import { Theme } from '@radix-ui/themes'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { VehiclesPage } from './VehiclesPage'
 import { useVehiclesQuery } from '../api/useVehiclesQuery'
-import type { Vehicle } from '../types/vehicle.types'
+import type { Vehicle } from '../../../shared/types/domain.types'
 
 vi.mock('../api/useVehiclesQuery')
 
@@ -52,5 +53,25 @@ describe('VehiclesPage', () => {
     expect(screen.getByTestId('vehicle-status-cards')).toBeInTheDocument()
     expect(screen.getByTestId('vehicles-filter-bar')).toBeInTheDocument()
     expect(screen.getByTestId('vehicles-table')).toBeInTheDocument()
+  })
+
+  it('logs a placeholder message when "Agregar Vehículo" is clicked', async () => {
+    const user = userEvent.setup()
+    const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined)
+
+    mockedUseVehiclesQuery.mockReturnValue({
+      isLoading: false
+    } as unknown as UseQueryResult<Vehicle[]>)
+
+    renderPage()
+
+    await user.click(screen.getByRole('button', { name: 'Agregar Vehículo' }))
+
+    expect(consoleInfoSpy).toHaveBeenCalledTimes(1)
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      'Agregar Vehículo: modal de alta pendiente de un spec futuro'
+    )
+
+    consoleInfoSpy.mockRestore()
   })
 })

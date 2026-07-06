@@ -3,7 +3,7 @@ import { Theme } from '@radix-ui/themes'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { VehicleStatusCards } from './VehicleStatusCards'
 import { useVehiclesStore } from '../store/useVehiclesStore'
-import type { Vehicle } from '../types/vehicle.types'
+import type { Vehicle } from '../../../shared/types/domain.types'
 
 const VEHICLES: Vehicle[] = [
   { id: '1', plate: 'ABC123', type: 'TRUCK', status: 'ACTIVE', capacity: 5000, zoneId: '1' },

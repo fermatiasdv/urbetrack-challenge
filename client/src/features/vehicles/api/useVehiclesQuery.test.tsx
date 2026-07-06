@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import { fetchVehicles, useVehiclesQuery } from './useVehiclesQuery'
 import { useVehiclesStore } from '../store/useVehiclesStore'
-import type { Vehicle } from '../types/vehicle.types'
+import type { Vehicle } from '../../../shared/types/domain.types'
 
 const VEHICLES: Vehicle[] = [
   { id: '1', plate: 'ABC123', type: 'TRUCK', status: 'ACTIVE', capacity: 5000, zoneId: '1' }

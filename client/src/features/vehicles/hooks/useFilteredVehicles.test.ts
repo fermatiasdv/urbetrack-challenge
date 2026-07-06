@@ -4,7 +4,7 @@ import { useFilteredVehicles } from './useFilteredVehicles'
 import { useVehiclesStore } from '../store/useVehiclesStore'
 import { useVehicleFiltersStore } from '../store/useVehicleFiltersStore'
 import { DEFAULT_VEHICLE_FILTERS } from '../utils/vehicleFilters'
-import type { Vehicle } from '../types/vehicle.types'
+import type { Vehicle } from '../../../shared/types/domain.types'
 
 const TRUCK_VEHICLE: Vehicle = {
   id: '1',

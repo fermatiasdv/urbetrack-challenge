@@ -5,8 +5,8 @@ import type { UseQueryResult } from '@tanstack/react-query'
 import { VehiclesTable } from './VehiclesTable'
 import { useVehiclesStore } from '../store/useVehiclesStore'
 import { useZonesQuery } from '../api/useZonesQuery'
-import type { Vehicle } from '../types/vehicle.types'
-import type { Zone } from '../types/zone.types'
+import type { Vehicle } from '../../../shared/types/domain.types'
+import type { Zone } from '../../../shared/types/domain.types'
 
 vi.mock('../api/useZonesQuery')
 

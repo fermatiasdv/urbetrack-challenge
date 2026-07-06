@@ -1,6 +1,6 @@
 import type { JSX } from 'react'
 import { AlertDialog, Button, Flex } from '@radix-ui/themes'
-import type { Vehicle } from '../types/vehicle.types'
+import type { Vehicle } from '../../../shared/types/domain.types'
 import { useVehiclesStore } from '../store/useVehiclesStore'
 
 export interface DeleteVehicleAlertDialogProps {

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Vehicle } from '../types/vehicle.types'
+import type { Vehicle } from '../../../shared/types/domain.types'
 
 export interface VehiclesState {
   vehicles: Vehicle[]

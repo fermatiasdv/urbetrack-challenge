@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useVehiclesStore } from '../store/useVehiclesStore'
 import { useVehicleFiltersStore } from '../store/useVehicleFiltersStore'
 import { filterVehicles } from '../utils/vehicleFilters'
-import type { Vehicle } from '../types/vehicle.types'
+import type { Vehicle } from '../../../shared/types/domain.types'
 
 /**
  * Derives the filtered vehicle list from `useVehiclesStore` + `useVehicleFiltersStore`

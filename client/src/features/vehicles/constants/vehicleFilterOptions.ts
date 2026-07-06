@@ -11,7 +11,7 @@
  * intentionally NOT here — they come from `useZonesQuery` (dynamic, backend-driven), not a static
  * constant.
  */
-import type { VehicleStatus, VehicleType } from '../types/vehicle.types'
+import type { VehicleStatus, VehicleType } from '../../../shared/types/domain.types'
 import { vehicleStatusLabel, vehicleTypeLabel } from '../utils/vehicleFormat'
 
 export type VehicleTypeFilter = 'ALL' | VehicleType
