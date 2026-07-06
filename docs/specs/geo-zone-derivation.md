@@ -232,3 +232,40 @@ forma aislada con valores exactos de borde/esquina sin depender del redondeo.
   lint && pnpm --filter client test && pnpm --filter client coverage` en un entorno con `node_modules`
   instalado nativamente (no vía este mount), mismo pedido que en specs previos con la misma
   limitación.
+
+## Fix post-CI (2026-07-06)
+
+**Síntoma real reportado por el usuario (GitHub Actions, `pnpm build` → `tsc -b`):**
+
+```text
+src/shared/geo/zones.test.ts(24,15): error TS2488: Type '[string, BoundingBox] | undefined' must
+have a '[Symbol.iterator]()' method that returns an iterator.
+```
+
+**Causa raíz:** `client/tsconfig.json` tiene `noUncheckedIndexedAccess: true`. `zones.test.ts`
+recorría pares de zonas indexando el array manualmente (`entries[i]`, `entries[j]`), lo cual bajo ese
+flag tipa el resultado como `T | undefined` — el `tsc -b` local de esta sesión no lo detectó porque
+corría contra un `node_modules`/symlinks con el mismo problema de corrupción ya documentado arriba
+(no llegaba a evaluar ese archivo con el tsconfig real del proyecto).
+
+**Fix:** se reescribió el test para recorrer pares con `for...of` anidado sobre `Object.entries(ZONES)`
+en vez de indexar por posición, evitando el acceso indexado:
+
+```ts
+for (const [nameA, boxA] of entries) {
+  for (const [nameB, boxB] of entries) {
+    if (nameA >= nameB) continue // pares sin repetir, sin auto-comparación
+    expect.soft(overlaps(boxA, boxB), `${nameA} overlaps ${nameB}`).toBe(false)
+  }
+}
+```
+
+Verificado con un script Node ad-hoc que la doble iteración sigue cubriendo las 10 combinaciones
+únicas de las 5 zonas (`C(5,2) = 10`), mismo comportamiento que antes.
+
+**Nota adicional de esta sesión:** al reescribir el archivo se detectó que el *mount* de esta sesión
+también puede dejar bytes nulos (`0x00`) al final de un archivo tras un `Edit` — visible solo desde
+`bash` (herramienta de shell), no desde `Read`/`Write` (que muestran el contenido real y correcto).
+Confirma que, en este entorno, `bash` opera sobre un espejo del filesystem potencialmente
+desincronizado del que usan las herramientas de archivo — para cualquier verificación de contenido
+de archivo, `Read` es la fuente de verdad, no `cat`/`xxd` vía `bash`.
