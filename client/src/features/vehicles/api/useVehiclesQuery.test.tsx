@@ -18,7 +18,7 @@ function wrapper({ children }: { children: ReactNode }) {
 }
 
 beforeEach(() => {
-  useVehiclesStore.setState({ vehicles: [] })
+  useVehiclesStore.setState({ vehicles: [], hasHydrated: false })
 })
 
 afterEach(() => {
@@ -68,5 +68,27 @@ describe('useVehiclesQuery', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     await waitFor(() => expect(useVehiclesStore.getState().vehicles).toEqual(VEHICLES))
+    expect(useVehiclesStore.getState().hasHydrated).toBe(true)
+  })
+
+  it('does not re-hydrate the store once it has already been hydrated locally', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(VEHICLES)
+      })
+    )
+
+    // Simulates a local-only mutation (e.g. deleting a vehicle) that happened
+    // after a previous hydration — the query cache/response is irrelevant
+    // from this point on (docs/specs/architecture.md "Hidratación única").
+    useVehiclesStore.setState({ vehicles: [], hasHydrated: true })
+
+    const { result } = renderHook(() => useVehiclesQuery(), { wrapper })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(useVehiclesStore.getState().vehicles).toEqual([])
   })
 })

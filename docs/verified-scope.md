@@ -400,4 +400,104 @@ El marcador coloreado en el mapa representa el estado de un **activo**, pero el 
 Estas no requieren decisión, se normalizaron directamente contra `src/types/index.ts`:
 
 - `MAINTENCE` → `MAINTENANCE`.
+- Estados de activo `Ok/Damage/Full/Out_of_service` → `OK/DAMAGED/FULL/OUT_OF_SERVICE`.
+
+### 10.13 "Una única carga" (§6.1) — ¿por sesión o por apertura de pantalla? — RESUELTO
+
+**Contexto del problema (bug real detectado 2026-07-06):** al implementar el borrado de un
+vehículo (`docs/feature/03-vehicles-table.md`), se observó que al eliminar un registro, navegar a
+otra pantalla y volver a "Vehículos", el vehículo eliminado reaparecía. La causa: el hook de query
+volvía a hidratar el store de Zustand con el dataset cacheado original en cada nuevo montaje de la
+pantalla, pisando el borrado local. El texto original de §6.1 ("la totalidad de los registros se
+obtiene una única vez al cargar la pantalla") no aclaraba si esa carga única es por sesión de la
+app o se repite cada vez que se vuelve a abrir la pantalla — con escrituras que solo viven en el
+store (sin backend, ver §7.4), esta última lectura rompe cualquier ABMC apenas se navega.
+
+**Resolución (confirmada):** la carga es única **por sesión de la aplicación**, no por cada
+apertura de pantalla. Una vez que un store de feature fue hidratado desde su query, permanece como
+única fuente de verdad hasta que la app se recarga — remontar la pantalla (navegar afuera y volver)
+**no** vuelve a pedir ni a pisar los datos. Esto aplica a `vehicles` hoy y a `assets`/`incidents`
+cuando desarrollen su propio ABMC. Detalle de la implementación (flag `hasHydrated` + query sin
+refetch automático) documentado como regla general en
+[docs/specs/architecture.md](./specs/architecture.md) → "Patrón: query hidrata store" →
+"Hidratación única".
+4. Esa **zona real derivada es la única fuente de verdad** para todo el sistema: coloreado y agrupación en el mapa, leyenda "Zona: `<name>`" en modales, y el **filtro y el orden "por zona" de las tablas (§6.2)** operan sobre la zona derivada, **no** sobre el `zoneId` crudo del backend. Esto elimina la posibilidad de que un mismo activo aparezca en el mapa bajo una zona y en la tabla bajo otra.
+
+**Nota de implementación (no bloqueante para el spec).** La geometría concreta de las 5 zonas (las coordenadas que las limitan) es un artefacto de datos a producir durante la implementación. Para el mock se recomiendan bounding boxes rectangulares disjuntos por su simplicidad y por garantizar la no-superposición; si más adelante se requiere fidelidad con los barrios reales, pueden reemplazarse por polígonos sin cambiar estas reglas. Dado que las coordenadas del seed se generan sobre todo Buenos Aires, se espera que una fracción importante de los 1500 activos quede fuera de las 5 zonas y sea excluida; si el volumen resultante en pantalla fuera insuficiente para la demo, el ajuste correcto es acotar la generación de coordenadas del seed a las zonas definidas (no relajar el filtro).
+
+---
+
+## 11. Ampliación de alcance — shell de navegación y ruteo (2026-07-05)
+
+Esta sección consolida y verifica el cambio de alcance definido en `docs/scope.md` → "Ampliación de alcance (2026-07-05)" y en el spec paraguas `docs/chore/03-navigation-shell-router.md`, cruzándolo contra el estado real del frontend (`client/src`) y los specs vigentes. Como en el resto del documento, no se resuelve nada unilateralmente que no haya sido decidido por el usuario; las decisiones tomadas se citan en 11.4.
+
+### 11.1 Situación de partida (verificada contra el código)
+
+Hoy el frontend **no tiene ruteo ni navegación**: `client/src/App.tsx` renderiza un `<main>` con `<h1>Urbetrack</h1>`, y `client/src/main.tsx` monta `<App />` dentro de `QueryClientProvider` + `<Theme>` (Radix). El único desarrollo funcional es el ejemplo `client/src/component-test` (tabla de vehículos), explícitamente marcado como *proof-of-concept* con datos locales en `component-test-vehicles-table.md`. Las carpetas `client/src/app/router/`, `client/src/app/providers/` y `client/src/app/store/` existen pero están vacías (solo `.gitkeep`), consistente con `architecture.md`: *"Se puebla a medida que cada spec lo requiera; no se crea contenido especulativo"*.
+
+Al implementar, `main.tsx` deja de montar `<App />` y pasa a montar `<RouterProvider router={router} />` dentro de los providers ya existentes (`QueryClientProvider` + `<Theme>`); ese cambio es código y se realiza en la fase de implementación, no en este spec.
+
+### 11.2 Qué entra en este cambio
+
+1. **Barra lateral de navegación (sidebar) persistente.** Logo (ícono de camión, `lucide-react` → `Truck`) + leyenda `URBETRACK`, seguido de los enlaces: Dashboard, Mapa, Activos, Vehículos, Incidentes. Vive en un **layout persistente** (ruta raíz del router): al navegar, solo cambia el contenido (`Outlet`); la sidebar **no se re-renderiza**.
+2. **Cinco pantallas placeholder**, una por enlace, que por ahora muestran **solo su leyenda** (`Dashboard`, `Mapa`, `Activos`, `Vehículos`, `Incidentes`). Sin funcionalidad todavía.
+3. **TanStack Router (code-based)** como mecanismo de ruteo, declarado como instalación en `component-test-vehicles-table.md` §3 y detallado en `architecture.md` → "Ruteo y navegación". Se agrega también `lucide-react`.
+4. **Estado global como fuente única, documentado como objetivo**: cada pantalla que no sea el Dashboard alojará, más adelante, su ABMC, y las modificaciones "le pegarán" al estado suscripto, reflejándose en tiempo real en las demás vistas.
+
+### 11.3 Qué NO entra (diferido)
+
+- El **ABMC** (Alta/Baja/Modificación/Consulta) real de Activos, Vehículos e Incidentes. Se implementará en specs de feature por entidad. Restricción ya verificada contra el backend (`docs/METHODS.md` → "Limitaciones conocidas"): el mock **solo expone `GET`/`POST`**, no `PUT`/`PATCH`/`DELETE`. Por lo tanto el ABMC operará **sobre el estado global del frontend**, sin llamadas de escritura al backend, extendiendo el mismo patrón ya acordado para la edición de vehículos (§7.4 de este documento: "Guardar" no llama al backend, actualiza el contexto/estado global).
+- El contenido funcional de cada pantalla (mapa Leaflet, tabs de tablas, filtros, mapa de calor, modales) descripto en las secciones 3, 6 y 7. Las pantallas de este cambio son placeholders.
+
+### 11.4 Decisiones tomadas (usuario, 2026-07-05)
+
+1. **Librería de íconos:** `lucide-react`.
+2. **TanStack Router:** configuración **code-based** (árbol de rutas tipado en `client/src/app/router/`), sin file-based routing ni plugin de build.
+3. **Alcance:** por ahora las pantallas muestran solo su leyenda; el ABMC de cada pantalla se desarrolla luego, en features aparte. Cita: *"Por ahora solo que la pantalla muestre una leyenda 'Vehiculos', 'Activos', etc. Luego desarrollaremos las features para desarrollar cada pantalla."*
+
+### 11.5 Impacto sobre secciones existentes de este documento
+
+- **§6 (Listados/tabs) y §7 (Modales):** sin cambios en su contenido; su implementación queda ahora encuadrada dentro de la pantalla correspondiente del nuevo shell (las tablas/tabs y modales vivirán en las pantallas de Activos, Vehículos e Incidentes cuando se desarrolle su feature). El comportamiento de sincronización sobre una única fuente de datos (criterio de aceptación #24) se refuerza con el objetivo de estado global de 11.2.4.
+- **§7.4 (guardado sin backend):** se generaliza como el patrón base para todo el futuro ABMC, no solo para vehículos.
+
+### 11.6 Criterios de aceptación del cambio
+
+25. Existe una barra lateral persistente con logo (camión) + `URBETRACK` y los enlaces Dashboard, Mapa, Activos, Vehículos, Incidentes.
+26. Cada enlace navega a su pantalla; al navegar, la sidebar no se re-renderiza (solo cambia el `Outlet`).
+27. Cada una de las cinco pantallas muestra únicamente su leyenda correspondiente.
+28. El ruteo usa TanStack Router en configuración code-based, fuertemente tipada, bajo `client/src/app/router/`.
+29. `@tanstack/react-router` y `lucide-react` quedan declarados como dependencias del cliente (spec de instalaciones) e instalados con `pnpm add`.
+30. El ABMC sobre estado global queda documentado como objetivo; no se implementa en este cambio.
+
+### 10.6 Marcador de activo vs. tooltip de incidente — RESUELTO
+
+El marcador coloreado en el mapa representa el estado de un **activo**, pero el tooltip al hacer hover muestra tipo y estado de un **incidente**. El scope no aclaraba qué se muestra en el tooltip de un activo sin incidente asociado, ni cómo se tratan los incidentes sin activo asociado.
+
+**Resolución (confirmada):** si el activo no tiene un incidente asociado, el tooltip muestra la leyenda "Estado OK." en verde. Para los incidentes, tanto los asociados a un activo como los que no tienen activo asociado, se mantiene siempre la paleta de estado de incidente (§10.7): `REPORTED` azul, `IN_PROGRESS` amarillo, `RESOLVED` verde.
+
+### 10.7 Colores de la leyenda del mapa de calor — RESUELTO
+
+**Resolución (confirmada):** `REPORTED` azul, `IN_PROGRESS` amarillo, `RESOLVED` verde.
+
+### 10.8 Sin vehículo apto disponible — RESUELTO
+
+**Resolución (confirmada):** cuando no existen vehículos disponibles para operar los incidentes de una zona, debe mostrarse una alerta no cerrable, de ancho completo, ubicada debajo del mapa y encima de las Tabs, con el texto: "No hay vehículos disponibles para esta zona".
+
+### 10.9 "Identificador" como criterio de orden en vehículos — RESUELTO
+
+**Resolución (confirmada):** para vehículos, "ordenar por identificador" usa la Placa (`plate`) en lugar del `id` interno.
+
+### 10.10 Filtro de tipo de vehículo incompleto — RESUELTO
+
+**Resolución (confirmada):** se agrega la opción "Furgoneta" al filtro de tipo de vehículo. Queda: Todos | Camión | Furgoneta | Camioneta.
+
+### 10.11 Alcance del botón "Guardar" y disparador del mensaje de error — RESUELTO
+
+**Resolución (confirmada):** el backend mock no expone `PUT` ni `PATCH`, por lo que "Guardar" no llama al backend — solo actualiza el vehículo en el contexto/estado global de la aplicación. Una vez que el contexto se actualiza correctamente, se considera guardado con éxito ("Vehículo actualizado correctamente."). El mensaje de error ("No fue posible actualizar el vehículo.") queda reservado para una falla al actualizar ese contexto, no para una validación de negocio adicional del servidor (que no existe).
+
+### 10.12 Correcciones menores de nomenclatura (ya aplicadas en este documento)
+
+Estas no requieren decisión, se normalizaron directamente contra `src/types/index.ts`:
+
+- `MAINTENCE` → `MAINTENANCE`.
 - Estados de activo `Ok/Damage/Full/Out_of_service` → `OK/DAMAGED/FULL/OU

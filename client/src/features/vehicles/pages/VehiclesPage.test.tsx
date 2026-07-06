@@ -12,6 +12,10 @@ vi.mock('../components/VehicleStatusCards', () => ({
   VehicleStatusCards: () => <div data-testid="vehicle-status-cards" />
 }))
 
+vi.mock('../components/VehiclesTable', () => ({
+  VehiclesTable: () => <div data-testid="vehicles-table" />
+}))
+
 const mockedUseVehiclesQuery = vi.mocked(useVehiclesQuery)
 
 function renderPage() {
@@ -42,5 +46,6 @@ describe('VehiclesPage', () => {
     renderPage()
 
     expect(screen.getByTestId('vehicle-status-cards')).toBeInTheDocument()
+    expect(screen.getByTestId('vehicles-table')).toBeInTheDocument()
   })
 })
