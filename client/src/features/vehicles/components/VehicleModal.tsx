@@ -6,6 +6,9 @@ import { useVehicleModalStore, type VehicleModalMode } from '../store/useVehicle
 import { useVehiclesStore } from '../store/useVehiclesStore'
 import { createVehicle } from '../api/useVehiclesQuery'
 import { useZonesQuery } from '../../../shared/services/useZonesQuery'
+import { useAssignmentsStore } from '../../../shared/services/assignments/useAssignmentsStore'
+import { useAssetsStore } from '../../../shared/services/assets/useAssetsStore'
+import { useIncidentsStore } from '../../../shared/services/incidents/useIncidentsStore'
 import { zoneNameFor } from '../../../shared/utils/zoneNameFor'
 import { StatusBadge } from '../../../shared/components/StatusBadge'
 import {
@@ -65,6 +68,10 @@ export function VehicleModal(): JSX.Element | null {
   const vehicles = useVehiclesStore((state) => state.vehicles)
   const updateVehicle = useVehiclesStore((state) => state.updateVehicle)
   const addVehicle = useVehiclesStore((state) => state.addVehicle)
+  const assetToVehicle = useAssignmentsStore((state) => state.assetToVehicle)
+  const incidentToVehicle = useAssignmentsStore((state) => state.incidentToVehicle)
+  const allAssets = useAssetsStore((state) => state.assets)
+  const allIncidents = useIncidentsStore((state) => state.incidents)
   const { data: zones } = useZonesQuery()
 
   const foundVehicle = vehicles.find((candidate) => candidate.id === vehicleId) ?? null
@@ -342,6 +349,16 @@ export function VehicleModal(): JSX.Element | null {
 
   const zonesById = new Map((zones ?? []).map((zone) => [zone.id, zone.name]))
 
+  // Activos/incidentes currently assigned to this vehicle
+  // (docs/feature/maps-asign-vehicle.md §6). A vehicle holds N of them; the
+  // assignment maps are `entityId -> vehicleId`, so we keep the entities that
+  // point back at this vehicle.
+  const assignedAssets = allAssets.filter((asset) => assetToVehicle[asset.id] === vehicle.id)
+  const assignedIncidents = allIncidents.filter(
+    (incident) => incidentToVehicle[incident.id] === vehicle.id
+  )
+  const assignedCount = assignedAssets.length + assignedIncidents.length
+
   function handleOpenChange(open: boolean): void {
     if (!open) {
       close()
@@ -469,6 +486,30 @@ export function VehicleModal(): JSX.Element | null {
         ) : (
           readOnlyDetails
         )}
+
+        <Flex direction="column" gap="2" mt="4">
+          <Text size="2" color="gray" weight="medium">
+            Activos e incidentes asignados
+          </Text>
+          {assignedCount === 0 ? (
+            <Text size="2" color="gray">
+              Este vehículo no tiene activos ni incidentes asignados.
+            </Text>
+          ) : (
+            <Flex direction="column" gap="1">
+              {assignedAssets.map((asset) => (
+                <Text as="p" size="2" key={`asset-${asset.id}`}>
+                  Activo · {asset.address}
+                </Text>
+              ))}
+              {assignedIncidents.map((incident) => (
+                <Text as="p" size="2" key={`incident-${incident.id}`}>
+                  Incidente · {incident.description}
+                </Text>
+              ))}
+            </Flex>
+          )}
+        </Flex>
 
         {feedback ? (
           <Text size="2" color={feedback.tone === 'success' ? 'green' : 'red'} mt="4" as="p">

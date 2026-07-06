@@ -16,6 +16,7 @@ vi.mock('react-leaflet', () => ({
   TileLayer: () => null,
   Marker: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   Tooltip: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  Popup: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   Rectangle: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   useMap: () => ({ removeLayer: vi.fn() })
 }))
