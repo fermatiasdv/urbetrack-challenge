@@ -16,7 +16,7 @@ import { useVehiclesQuery } from '../../vehicles/api/useVehiclesQuery'
  * stores, not reset by navigation).
  *
  * `useVehiclesQuery()` is mounted here (not only in `VehiclesPage`) so the
- * "Vehículos" tab has data even when `/mapa` is opened directly without
+ * "Vehículos" tab has data even when `/` (Mapa) is opened directly without
  * first visiting `/vehiculos` — same "query hydrates store, hydrated once"
  * pattern, `hasHydrated` prevents a duplicate/competing hydration if both
  * pages mount in the same session.

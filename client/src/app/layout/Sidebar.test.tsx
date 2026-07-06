@@ -19,14 +19,13 @@ function renderSidebar(initialPath = '/') {
 }
 
 describe('Sidebar', () => {
-  it('renders the header and the five navigation links with their target routes', async () => {
+  it('renders the header and the four navigation links with their target routes', async () => {
     renderSidebar()
 
     await screen.findByText('Logistics Manager')
     expect(screen.getByText('Operational Hub')).toBeInTheDocument()
 
-    expect(screen.getByRole('link', { name: /Dashboard/ })).toHaveAttribute('href', '/')
-    expect(screen.getByRole('link', { name: /Mapas/ })).toHaveAttribute('href', '/mapa')
+    expect(screen.getByRole('link', { name: /Mapas/ })).toHaveAttribute('href', '/')
     expect(screen.getByRole('link', { name: /Registro de Activos/ })).toHaveAttribute(
       'href',
       '/activos'
@@ -44,7 +43,7 @@ describe('Sidebar', () => {
   })
 
   it('highlights the active route link with the active nav styles', async () => {
-    renderSidebar('/mapa')
+    renderSidebar('/')
 
     const activeLink = await screen.findByRole('link', { name: /Mapas/ })
     expect(activeLink).toHaveStyle({
@@ -52,17 +51,17 @@ describe('Sidebar', () => {
       color: designTokens.colors.onSecondaryContainer
     })
 
-    const inactiveLink = screen.getByRole('link', { name: /Dashboard/ })
+    const inactiveLink = screen.getByRole('link', { name: /Registro de Activos/ })
     expect(inactiveLink).not.toHaveStyle({
       backgroundColor: designTokens.colors.secondaryContainer
     })
   })
 
   it('keeps the same Radix Button variant across active and inactive nav links, so the box size does not change on selection', async () => {
-    renderSidebar('/mapa')
+    renderSidebar('/')
 
     const activeLink = await screen.findByRole('link', { name: /Mapas/ })
-    const inactiveLink = screen.getByRole('link', { name: /Dashboard/ })
+    const inactiveLink = screen.getByRole('link', { name: /Registro de Activos/ })
 
     expect(activeLink.className).toContain('rt-variant-ghost')
     expect(inactiveLink.className).toContain('rt-variant-ghost')

@@ -1,14 +1,6 @@
 import { Link, useMatchRoute } from '@tanstack/react-router'
 import { Box, Flex, Heading, Separator, Text, Button } from '@radix-ui/themes'
-import {
-  AlertTriangle,
-  BellPlus,
-  LayoutDashboard,
-  Map,
-  Package,
-  Truck,
-  type LucideIcon
-} from 'lucide-react'
+import { AlertTriangle, BellPlus, Map, Package, Truck, type LucideIcon } from 'lucide-react'
 import {
   navItemActiveStyle,
   navItemInactiveStyle,
@@ -27,8 +19,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: readonly NavItem[] = [
-  { label: 'Dashboard', to: '/', icon: LayoutDashboard },
-  { label: 'Mapas', to: '/mapa', icon: Map },
+  { label: 'Mapas', to: '/', icon: Map },
   { label: 'Registro de Activos', to: '/activos', icon: Package },
   { label: 'Vehículos', to: '/vehiculos', icon: Truck },
   { label: 'Incidentes', to: '/incidentes', icon: AlertTriangle }

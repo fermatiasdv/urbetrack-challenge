@@ -1,6 +1,5 @@
 import { createRootRoute, createRoute } from '@tanstack/react-router'
 import { AppLayout } from '../layout/AppLayout'
-import { DashboardPage } from '../../features/dashboard/pages/DashboardPage'
 import { MapPage } from '../../features/map/pages/MapPage'
 import { AssetsPage } from '../../features/assets/pages/AssetsPage'
 import { VehiclesPage } from '../../features/vehicles/pages/VehiclesPage'
@@ -10,15 +9,9 @@ export const rootRoute = createRootRoute({
   component: AppLayout
 })
 
-const dashboardRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
-  component: DashboardPage
-})
-
 const mapRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/mapa',
+  path: '/',
   component: MapPage
 })
 
@@ -41,7 +34,6 @@ const incidentsRoute = createRoute({
 })
 
 export const routeTree = rootRoute.addChildren([
-  dashboardRoute,
   mapRoute,
   assetsRoute,
   vehiclesRoute,
