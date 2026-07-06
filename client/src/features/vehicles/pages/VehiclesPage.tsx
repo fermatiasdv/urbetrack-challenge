@@ -3,6 +3,7 @@ import { Skeleton } from '@radix-ui/themes'
 import { Plus } from 'lucide-react'
 import { HeaderPage, type HeaderPageProps } from '../../../shared/components/HeaderPage'
 import { useVehiclesQuery } from '../api/useVehiclesQuery'
+import { VehicleModal } from '../components/VehicleModal'
 import { VehicleStatusCards } from '../components/VehicleStatusCards'
 import { VehiclesFilterBar } from '../components/VehiclesFilterBar'
 import { VehiclesTable } from '../components/VehiclesTable'
@@ -40,6 +41,7 @@ export function VehiclesPage(): JSX.Element {
           <VehiclesTable />
         </>
       )}
+      <VehicleModal />
     </div>
   )
 }

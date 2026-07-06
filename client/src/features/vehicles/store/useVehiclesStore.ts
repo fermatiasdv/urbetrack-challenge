@@ -6,6 +6,7 @@ export interface VehiclesState {
   hasHydrated: boolean
   setVehicles: (vehicles: Vehicle[]) => void
   removeVehicle: (id: string) => void
+  updateVehicle: (id: string, changes: Partial<Vehicle>) => void
 }
 
 /**
@@ -22,11 +23,22 @@ export interface VehiclesState {
  * docs/verified-scope.md). Because the backend never reflects this, the
  * store — once hydrated — must remain the only source of truth for the
  * whole session.
+ *
+ * `updateVehicle` backs "Guardar" in `VehicleModal`
+ * (docs/feature/06-vehicles-modal.md): the mock backend has no `PUT`/`PATCH`
+ * either, so saving only merges `changes` into the matching vehicle in this
+ * store, same rationale as `removeVehicle`.
  */
 export const useVehiclesStore = create<VehiclesState>((set) => ({
   vehicles: [],
   hasHydrated: false,
   setVehicles: (vehicles) => set({ vehicles, hasHydrated: true }),
   removeVehicle: (id) =>
-    set((state) => ({ vehicles: state.vehicles.filter((vehicle) => vehicle.id !== id) }))
+    set((state) => ({ vehicles: state.vehicles.filter((vehicle) => vehicle.id !== id) })),
+  updateVehicle: (id, changes) =>
+    set((state) => ({
+      vehicles: state.vehicles.map((vehicle) =>
+        vehicle.id === id ? { ...vehicle, ...changes } : vehicle
+      )
+    }))
 }))
