@@ -36,7 +36,8 @@ estado. El vehículo ve sus activos/incidentes asignados en su modal de detalle.
 
 ### Cuándo se muestra el `Select` (gating por estado)
 
-- Activo: solo si `status === 'OK'`.
+- Activo: solo si `status !== 'OUT_OF_SERVICE'` (es decir, `OK`, `FULL` o `DAMAGED`) — ampliado por
+  [docs/specs/fix-asset-assignment-ok-full-damaged.md](../specs/fix-asset-assignment-ok-full-damaged.md).
 - Incidente: solo si `status === 'REPORTED'`.
 - En cualquier otro estado, el `Select` **no se renderiza** (el `Popup` puede seguir mostrando info).
 
@@ -71,7 +72,8 @@ estado. El vehículo ve sus activos/incidentes asignados en su modal de detalle.
 Un par (activo/incidente ↔ vehículo) deja de ser válido — y se elimina automáticamente — cuando:
 
 - el vehículo deja de estar `ACTIVE` (pasa a `MAINTENANCE`/`OUT_OF_SERVICE`), **o**
-- el activo deja de estar `OK`, o el incidente deja de estar `REPORTED`, **o**
+- el activo pasa a `OUT_OF_SERVICE` (se mantiene si es `OK`, `FULL` o `DAMAGED`), o el incidente
+  deja de estar `REPORTED`, **o**
 - el vehículo, el activo o el incidente dejan de existir (borrado).
 
 Es una eliminación real y persistente del estado (no una ocultación en lectura): si el vehículo
@@ -227,9 +229,10 @@ client/src/features/vehicles/components/
 
 ## Criterios de aceptación
 
-- **CA-01:** Click en un marcador de activo `OK` abre un `Popup` con un `Select` de vehículos.
+- **CA-01:** Click en un marcador de activo `OK`, `FULL` o `DAMAGED` abre un `Popup` con un `Select`
+  de vehículos.
 - **CA-02:** Click en un marcador de incidente `REPORTED` abre un `Popup` con un `Select`.
-- **CA-03:** Activo en estado ≠ `OK` (o incidente ≠ `REPORTED`) no muestra el `Select`.
+- **CA-03:** Activo `OUT_OF_SERVICE` (o incidente ≠ `REPORTED`) no muestra el `Select`.
 - **CA-04:** El `Select` lista únicamente vehículos `ACTIVE`, de la misma zona y compatibles por
   tipo (`TRUCK→CONTAINER`, `VAN→BIN`, `PICKUP→BENCH`; incidente por su activo asociado, o sin
   restricción de tipo si es independiente).
@@ -237,8 +240,8 @@ client/src/features/vehicles/components/
   sumo un vehículo.
 - **CA-06:** Un vehículo admite varios activos/incidentes; se listan en `VehicleModal` (details).
 - **CA-07:** Si el vehículo asignado deja de estar `ACTIVE`, la asignación se elimina sola.
-- **CA-08:** Si el activo deja de estar `OK` (o el incidente deja de estar `REPORTED`), su
-  asignación se elimina sola.
+- **CA-08:** Si el activo pasa a `OUT_OF_SERVICE` (o el incidente deja de estar `REPORTED`), su
+  asignación se elimina sola; si pasa a `FULL` o `DAMAGED`, se conserva.
 - **CA-09:** Borrar un vehículo/activo/incidente elimina sus asignaciones asociadas.
 
 ## Plan de tests

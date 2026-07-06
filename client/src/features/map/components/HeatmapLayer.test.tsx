@@ -1,8 +1,8 @@
 import { render } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { HeatmapLayer } from './HeatmapLayer'
 import { useMapStore } from '../store/useMapStore'
-import type { AssociatedIncident } from '../types'
+import type { AssociatedIncident, GeoTaggedAsset } from '../types'
 
 const { heatLayerMock, removeLayerMock, addToMock } = vi.hoisted(() => ({
   heatLayerMock: vi.fn(),
@@ -45,7 +45,37 @@ function makeIncident(overrides: Partial<AssociatedIncident>): AssociatedInciden
   }
 }
 
-describe('HeatmapLayer', () => {
+function makeAsset(overrides: Partial<GeoTaggedAsset>): GeoTaggedAsset {
+  return {
+    id: 'asset-1',
+    type: 'BIN',
+    status: 'OK',
+    lat: -34.6,
+    lng: -58.38,
+    address: 'Av. Corrientes 1',
+    zoneId: '1',
+    derivedZone: 'MICROCENTRO',
+    ...overrides
+  }
+}
+
+// Clean baseline: nothing radiates unless a test opts in. Incident and asset
+// filters both start empty so each test controls exactly which layers appear.
+beforeEach(() => {
+  heatLayerMock.mockClear()
+  addToMock.mockClear()
+  removeLayerMock.mockClear()
+  getSizeMock.mockReset()
+  getSizeMock.mockReturnValue({ x: 800, y: 520 })
+  useMapStore.setState({
+    assets: [],
+    incidents: [],
+    heatmapFilters: { statuses: [], types: [] },
+    assetHeatmapFilters: { statuses: [], types: [] }
+  })
+})
+
+describe('HeatmapLayer — incidents', () => {
   it('creates one L.heatLayer per selected status and adds it to the map', () => {
     useMapStore.setState({
       incidents: [
@@ -66,9 +96,6 @@ describe('HeatmapLayer', () => {
   })
 
   it('only creates layers for the statuses selected in heatmapFilters', () => {
-    heatLayerMock.mockClear()
-    addToMock.mockClear()
-
     useMapStore.setState({
       incidents: [makeIncident({ status: 'REPORTED' })],
       heatmapFilters: {
@@ -83,8 +110,6 @@ describe('HeatmapLayer', () => {
   })
 
   it('passes lat/lng/intensity tuples matching the filtered incidents to L.heatLayer', () => {
-    heatLayerMock.mockClear()
-
     useMapStore.setState({
       incidents: [makeIncident({ status: 'REPORTED', lat: -34.1, lng: -58.1 })],
       heatmapFilters: { statuses: ['REPORTED'], types: ['OVERFLOW'] }
@@ -99,8 +124,6 @@ describe('HeatmapLayer', () => {
   })
 
   it('removes every created layer from the map on unmount', () => {
-    removeLayerMock.mockClear()
-
     useMapStore.setState({
       incidents: [makeIncident({ status: 'REPORTED' })],
       heatmapFilters: { statuses: ['REPORTED'], types: ['OVERFLOW'] }
@@ -113,16 +136,12 @@ describe('HeatmapLayer', () => {
   })
 
   it('renders nothing', () => {
-    useMapStore.setState({ incidents: [], heatmapFilters: { statuses: [], types: [] } })
-
     const { container } = render(<HeatmapLayer />)
 
     expect(container).toBeEmptyDOMElement()
   })
 
   it('defers layer creation until map.getSize() reports a non-zero size (IndexSizeError guard)', () => {
-    heatLayerMock.mockClear()
-    addToMock.mockClear()
     getSizeMock.mockReset()
     getSizeMock.mockReturnValueOnce({ x: 0, y: 0 }).mockReturnValue({ x: 800, y: 520 })
 
@@ -144,7 +163,71 @@ describe('HeatmapLayer', () => {
     expect(heatLayerMock).toHaveBeenCalledTimes(1)
 
     rafSpy.mockRestore()
-    getSizeMock.mockReset()
-    getSizeMock.mockReturnValue({ x: 800, y: 520 })
+  })
+})
+
+describe('HeatmapLayer — assets', () => {
+  it('creates one L.heatLayer per selected asset status', () => {
+    useMapStore.setState({
+      assets: [
+        makeAsset({ id: '1', status: 'OK' }),
+        makeAsset({ id: '2', status: 'FULL' }),
+        makeAsset({ id: '3', status: 'DAMAGED' }),
+        makeAsset({ id: '4', status: 'OUT_OF_SERVICE' })
+      ],
+      assetHeatmapFilters: {
+        statuses: ['OK', 'FULL', 'DAMAGED', 'OUT_OF_SERVICE'],
+        types: ['CONTAINER', 'BIN', 'BENCH']
+      }
+    })
+
+    render(<HeatmapLayer />)
+
+    expect(heatLayerMock).toHaveBeenCalledTimes(4)
+    expect(addToMock).toHaveBeenCalledTimes(4)
+  })
+
+  it('only creates asset layers for the statuses selected in assetHeatmapFilters', () => {
+    useMapStore.setState({
+      assets: [makeAsset({ id: '1', status: 'OK' }), makeAsset({ id: '2', status: 'FULL' })],
+      assetHeatmapFilters: { statuses: ['FULL'], types: ['CONTAINER', 'BIN', 'BENCH'] }
+    })
+
+    render(<HeatmapLayer />)
+
+    expect(heatLayerMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('colors the asset layer with its marker color and uses the asset heat tuning', () => {
+    useMapStore.setState({
+      assets: [makeAsset({ status: 'FULL', type: 'CONTAINER', lat: -34.1, lng: -58.1 })],
+      assetHeatmapFilters: { statuses: ['FULL'], types: ['CONTAINER'] }
+    })
+
+    render(<HeatmapLayer />)
+
+    expect(heatLayerMock).toHaveBeenCalledWith(
+      [[-34.1, -58.1, 0.4]],
+      expect.objectContaining({
+        radius: 20,
+        blur: 15,
+        max: 3,
+        gradient: { 0.4: '#ef4444', 1: '#ef4444' }
+      })
+    )
+  })
+
+  it('creates both incident and asset layers when both are selected', () => {
+    useMapStore.setState({
+      incidents: [makeIncident({ status: 'REPORTED' })],
+      heatmapFilters: { statuses: ['REPORTED'], types: ['OVERFLOW'] },
+      assets: [makeAsset({ status: 'FULL' })],
+      assetHeatmapFilters: { statuses: ['FULL'], types: ['CONTAINER', 'BIN', 'BENCH'] }
+    })
+
+    render(<HeatmapLayer />)
+
+    expect(heatLayerMock).toHaveBeenCalledTimes(2)
+    expect(addToMock).toHaveBeenCalledTimes(2)
   })
 })

@@ -1,5 +1,7 @@
 import type {
   Asset,
+  AssetStatus,
+  AssetType,
   Incident,
   IncidentStatus,
   IncidentType,
@@ -40,4 +42,20 @@ export interface HeatmapPoint {
   lat: number
   lng: number
   status: IncidentStatus
+}
+
+/**
+ * Filters for the asset heat layers (docs/feature/14-assets-in-heatmap.md).
+ * Kept parallel to `HeatmapFilters` (incidents) instead of merged, so the
+ * incident filter state/schema/tests stay untouched.
+ */
+export interface AssetHeatmapFilters {
+  statuses: AssetStatus[]
+  types: AssetType[]
+}
+
+export interface AssetHeatmapPoint {
+  lat: number
+  lng: number
+  status: AssetStatus
 }

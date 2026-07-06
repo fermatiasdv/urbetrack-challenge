@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { Theme } from '@radix-ui/themes'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import type { UseQueryResult } from '@tanstack/react-query'
@@ -113,5 +114,39 @@ describe('IncidentMarkersLayer', () => {
     renderLayer()
 
     expect(screen.getAllByTestId('marker')).toHaveLength(1)
+  })
+
+  it('assigns the selected vehicle to the incident', async () => {
+    const user = userEvent.setup()
+    useVehiclesStore.setState({ vehicles: [ACTIVE_VAN] })
+    useMapStore.setState({ incidents: [REPORTED_INDEPENDENT] })
+
+    renderLayer()
+
+    await user.click(screen.getByLabelText('Vehículo asignado'))
+    await user.click(await screen.findByRole('option', { name: 'Furgoneta (DEF456)' }))
+
+    expect(useAssignmentsStore.getState().incidentToVehicle[REPORTED_INDEPENDENT.id]).toBe(
+      ACTIVE_VAN.id
+    )
+  })
+
+  it('clears the assigned vehicle from the incident', async () => {
+    const user = userEvent.setup()
+    useVehiclesStore.setState({ vehicles: [ACTIVE_VAN] })
+    useAssignmentsStore.setState({
+      assetToVehicle: {},
+      incidentToVehicle: { [REPORTED_INDEPENDENT.id]: ACTIVE_VAN.id }
+    })
+    useMapStore.setState({ incidents: [REPORTED_INDEPENDENT] })
+
+    renderLayer()
+
+    await user.click(screen.getByLabelText('Vehículo asignado'))
+    await user.click(await screen.findByRole('option', { name: 'Sin asignar' }))
+
+    expect(
+      useAssignmentsStore.getState().incidentToVehicle[REPORTED_INDEPENDENT.id]
+    ).toBeUndefined()
   })
 })

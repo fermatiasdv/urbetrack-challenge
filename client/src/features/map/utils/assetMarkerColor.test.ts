@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { assetMarkerColor, ASSET_STATUS_LEGEND_LABELS } from './assetMarkerColor'
+import {
+  assetMarkerColor,
+  ASSET_STATUS_LEGEND_LABELS,
+  ASSET_TYPE_LEGEND_LABELS
+} from './assetMarkerColor'
 
 describe('assetMarkerColor', () => {
   it('returns green for OK', () => {
@@ -26,6 +30,16 @@ describe('ASSET_STATUS_LEGEND_LABELS', () => {
       FULL: 'Completo',
       DAMAGED: 'Dañado',
       OUT_OF_SERVICE: 'Fuera de servicio'
+    })
+  })
+})
+
+describe('ASSET_TYPE_LEGEND_LABELS', () => {
+  it('has a label for each AssetType', () => {
+    expect(ASSET_TYPE_LEGEND_LABELS).toEqual({
+      CONTAINER: 'Contenedor',
+      BIN: 'Cesto',
+      BENCH: 'Banco'
     })
   })
 })

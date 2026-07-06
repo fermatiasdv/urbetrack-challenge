@@ -101,6 +101,10 @@ beforeEach(() => {
       statuses: ['REPORTED', 'IN_PROGRESS', 'RESOLVED'],
       types: ['OVERFLOW', 'DAMAGE', 'LITTERING', 'OTHER']
     },
+    assetHeatmapFilters: {
+      statuses: ['OK', 'FULL', 'DAMAGED', 'OUT_OF_SERVICE'],
+      types: ['CONTAINER', 'BIN', 'BENCH']
+    },
     selectedZone: null
   })
   // `useVehiclesQuery` is mocked above, so hydration never runs here: tests
@@ -131,6 +135,7 @@ describe('MapPage', () => {
     expect(screen.getByTestId('asset-legend')).toBeInTheDocument()
     expect(screen.getByTestId('heatmap-legend')).toBeInTheDocument()
     expect(screen.getByTestId('heatmap-filters')).toBeInTheDocument()
+    expect(screen.getByTestId('asset-heatmap-filters')).toBeInTheDocument()
     expect(screen.getByTestId('assets-table')).toBeInTheDocument()
   })
 
@@ -143,6 +148,7 @@ describe('MapPage', () => {
 
     expect(screen.queryByTestId('heatmap-legend')).not.toBeInTheDocument()
     expect(screen.queryByTestId('heatmap-filters')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('asset-heatmap-filters')).not.toBeInTheDocument()
     expect(screen.getByTestId('asset-legend')).toBeInTheDocument()
   })
 

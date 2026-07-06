@@ -1,4 +1,11 @@
-import type { AssociatedIncident, HeatmapFilters, HeatmapPoint } from '../types'
+import type {
+  AssetHeatmapFilters,
+  AssetHeatmapPoint,
+  AssociatedIncident,
+  GeoTaggedAsset,
+  HeatmapFilters,
+  HeatmapPoint
+} from '../types'
 
 /**
  * Projects the associated incidents into heatmap points, filtered by the
@@ -18,4 +25,21 @@ export function buildHeatmapData(
         filters.statuses.includes(incident.status) && filters.types.includes(incident.type)
     )
     .map((incident) => ({ lat: incident.lat, lng: incident.lng, status: incident.status }))
+}
+
+/**
+ * Projects the zone-filtered assets into heatmap points, filtered by the
+ * selected asset statuses/types (docs/feature/14-assets-in-heatmap.md). Same
+ * AND semantics as `buildHeatmapData`: selecting none of a dimension yields an
+ * empty result. `status` determines the color of the `leaflet.heat` layer.
+ */
+export function buildAssetHeatmapData(
+  assets: GeoTaggedAsset[],
+  filters: AssetHeatmapFilters
+): AssetHeatmapPoint[] {
+  return assets
+    .filter(
+      (asset) => filters.statuses.includes(asset.status) && filters.types.includes(asset.type)
+    )
+    .map((asset) => ({ lat: asset.lat, lng: asset.lng, status: asset.status }))
 }

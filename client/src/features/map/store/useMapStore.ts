@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { deriveZone } from '../../../shared/geo/deriveZone'
 import type { Asset, Incident, SupportedZone } from '../../../shared/types/domain.types'
 import type {
+  AssetHeatmapFilters,
   AssociatedIncident,
   GeoTaggedAsset,
   GeoTaggedIncident,
@@ -14,16 +15,23 @@ const ALL_HEATMAP_FILTERS: HeatmapFilters = {
   types: ['OVERFLOW', 'DAMAGE', 'LITTERING', 'OTHER']
 }
 
+const ALL_ASSET_HEATMAP_FILTERS: AssetHeatmapFilters = {
+  statuses: ['OK', 'FULL', 'DAMAGED', 'OUT_OF_SERVICE'],
+  types: ['CONTAINER', 'BIN', 'BENCH']
+}
+
 export interface MapState {
   assets: GeoTaggedAsset[]
   incidents: AssociatedIncident[]
   heatmapEnabled: boolean
   heatmapFilters: HeatmapFilters
+  assetHeatmapFilters: AssetHeatmapFilters
   selectedZone: SupportedZone | null
 
   syncFromShared: (assets: Asset[], incidents: Incident[]) => void
   toggleHeatmap: () => void
   setHeatmapFilters: (filters: HeatmapFilters) => void
+  setAssetHeatmapFilters: (filters: AssetHeatmapFilters) => void
   setSelectedZone: (zone: SupportedZone | null) => void
 }
 
@@ -51,6 +59,7 @@ export const useMapStore = create<MapState>((set) => ({
   incidents: [],
   heatmapEnabled: true,
   heatmapFilters: ALL_HEATMAP_FILTERS,
+  assetHeatmapFilters: ALL_ASSET_HEATMAP_FILTERS,
   selectedZone: null,
 
   syncFromShared: (assets, incidents) => {
@@ -77,5 +86,6 @@ export const useMapStore = create<MapState>((set) => ({
   },
   toggleHeatmap: () => set((state) => ({ heatmapEnabled: !state.heatmapEnabled })),
   setHeatmapFilters: (filters) => set({ heatmapFilters: filters }),
+  setAssetHeatmapFilters: (filters) => set({ assetHeatmapFilters: filters }),
   setSelectedZone: (zone) => set({ selectedZone: zone })
 }))

@@ -55,6 +55,10 @@ beforeEach(() => {
       statuses: ['REPORTED', 'IN_PROGRESS', 'RESOLVED'],
       types: ['OVERFLOW', 'DAMAGE', 'LITTERING', 'OTHER']
     },
+    assetHeatmapFilters: {
+      statuses: ['OK', 'FULL', 'DAMAGED', 'OUT_OF_SERVICE'],
+      types: ['CONTAINER', 'BIN', 'BENCH']
+    },
     selectedZone: null
   })
 })
@@ -114,6 +118,20 @@ describe('useMapStore.setHeatmapFilters', () => {
       statuses: ['REPORTED'],
       types: ['OVERFLOW']
     })
+  })
+})
+
+describe('useMapStore.setAssetHeatmapFilters', () => {
+  it('replaces only the asset filters, leaving the incident filters untouched', () => {
+    const incidentFiltersBefore = useMapStore.getState().heatmapFilters
+
+    useMapStore.getState().setAssetHeatmapFilters({ statuses: ['FULL'], types: ['CONTAINER'] })
+
+    expect(useMapStore.getState().assetHeatmapFilters).toEqual({
+      statuses: ['FULL'],
+      types: ['CONTAINER']
+    })
+    expect(useMapStore.getState().heatmapFilters).toBe(incidentFiltersBefore)
   })
 })
 

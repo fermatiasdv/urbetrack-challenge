@@ -16,14 +16,17 @@ export interface ReconcileResult {
 
 /**
  * Prunes assignments that are no longer valid (docs/feature/maps-asign-vehicle.md
- * §"Desasignación automática"). A pair is kept only when **both** ends are still
- * eligible:
+ * §"Desasignación automática", ampliado por
+ * docs/specs/fix-asset-assignment-ok-full-damaged.md). A pair is kept only when
+ * **both** ends are still eligible:
  *
  * - the vehicle exists and is `ACTIVE`, and
- * - the asset exists and is `OK` (resp. the incident exists and is `REPORTED`).
+ * - the asset exists and is `OK`, `FULL` or `DAMAGED` (resp. the incident exists
+ *   and is `REPORTED`).
  *
- * Any other transition — vehicle to `MAINTENANCE`/`OUT_OF_SERVICE`, asset off
- * `OK`, incident off `REPORTED`, or any of the three deleted — drops the pair.
+ * Any other transition — vehicle to `MAINTENANCE`/`OUT_OF_SERVICE`, asset to
+ * `OUT_OF_SERVICE`, incident off `REPORTED`, or any of the three deleted —
+ * drops the pair.
  * This is a real removal, not a read-time filter: re-activating the vehicle
  * later does not resurrect the assignment.
  *
@@ -34,8 +37,8 @@ export function reconcileAssignments(input: ReconcileInput): ReconcileResult {
   const activeVehicleIds = new Set(
     input.vehicles.filter((vehicle) => vehicle.status === 'ACTIVE').map((vehicle) => vehicle.id)
   )
-  const okAssetIds = new Set(
-    input.assets.filter((asset) => asset.status === 'OK').map((asset) => asset.id)
+  const assignableAssetIds = new Set(
+    input.assets.filter((asset) => asset.status !== 'OUT_OF_SERVICE').map((asset) => asset.id)
   )
   const reportedIncidentIds = new Set(
     input.incidents
@@ -45,7 +48,7 @@ export function reconcileAssignments(input: ReconcileInput): ReconcileResult {
 
   const nextAssetToVehicle = pruneMap(
     input.assetToVehicle,
-    (assetId, vehicleId) => okAssetIds.has(assetId) && activeVehicleIds.has(vehicleId)
+    (assetId, vehicleId) => assignableAssetIds.has(assetId) && activeVehicleIds.has(vehicleId)
   )
   const nextIncidentToVehicle = pruneMap(
     input.incidentToVehicle,

@@ -11,6 +11,7 @@ import { IncidentMarkersLayer } from '../components/IncidentMarkersLayer'
 import { HeatmapLayer } from '../components/HeatmapLayer'
 import { HeatmapLegend } from '../components/HeatmapLegend'
 import { HeatmapFilters } from '../components/HeatmapFilters'
+import { AssetHeatmapFilters } from '../components/AssetHeatmapFilters'
 import { AssetLegend } from '../components/AssetLegend'
 import { AvailabilityAlert } from '../components/AvailabilityAlert'
 import { MapEntityTabs } from '../components/MapEntityTabs'
@@ -71,6 +72,7 @@ export function MapPage(): JSX.Element {
               {heatmapEnabled ? (
                 <>
                   <HeatmapFilters />
+                  <AssetHeatmapFilters />
                   <HeatmapLegend />
                 </>
               ) : null}

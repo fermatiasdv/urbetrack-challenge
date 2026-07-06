@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { Theme } from '@radix-ui/themes'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import type { UseQueryResult } from '@tanstack/react-query'
@@ -61,12 +62,32 @@ const ASSOCIATED_INCIDENT: AssociatedIncident = {
   associatedAssetId: 'asset-2'
 }
 
+const ASSET_OUT_OF_SERVICE: GeoTaggedAsset = {
+  id: 'asset-3',
+  type: 'BENCH',
+  status: 'OUT_OF_SERVICE',
+  lat: -34.6,
+  lng: -58.38,
+  address: 'Av. Callao 3',
+  zoneId: '1',
+  derivedZone: 'MICROCENTRO'
+}
+
 const ACTIVE_TRUCK: Vehicle = {
   id: 'v1',
   plate: 'ABC123',
   type: 'TRUCK',
   status: 'ACTIVE',
   capacity: 5000,
+  zoneId: '1'
+}
+
+const ACTIVE_VAN: Vehicle = {
+  id: 'v2',
+  plate: 'DEF456',
+  type: 'VAN',
+  status: 'ACTIVE',
+  capacity: 1500,
   zoneId: '1'
 }
 
@@ -93,12 +114,20 @@ describe('AssetMarkersLayer', () => {
     expect(screen.getAllByTestId('marker')).toHaveLength(2)
   })
 
-  it('shows "Estado OK" for an asset without an associated incident', () => {
+  it('shows "OK" for an OK asset without an associated incident', () => {
     useMapStore.setState({ assets: [ASSET_OK], incidents: [] })
 
     renderLayer()
 
-    expect(screen.getByText('Estado OK')).toBeInTheDocument()
+    expect(screen.getByText('OK')).toBeInTheDocument()
+  })
+
+  it('shows "Completo" for a FULL asset without an associated incident', () => {
+    useMapStore.setState({ assets: [ASSET_WITH_INCIDENT], incidents: [] })
+
+    renderLayer()
+
+    expect(screen.getByText('Completo')).toBeInTheDocument()
   })
 
   it('shows incident info for an asset with an associated incident', () => {
@@ -118,15 +147,75 @@ describe('AssetMarkersLayer', () => {
     expect(screen.getByLabelText('Vehículo asignado')).toBeInTheDocument()
   })
 
-  it('does not offer the assignment control for a non-OK asset', () => {
-    useVehiclesStore.setState({ vehicles: [ACTIVE_TRUCK] })
+  it('offers the assignment control for a FULL asset', () => {
+    useVehiclesStore.setState({ vehicles: [ACTIVE_VAN] })
     useMapStore.setState({ assets: [ASSET_WITH_INCIDENT], incidents: [] })
+
+    renderLayer()
+
+    expect(screen.getByLabelText('Vehículo asignado')).toBeInTheDocument()
+  })
+
+  it('offers the assignment control for a DAMAGED asset', () => {
+    useVehiclesStore.setState({ vehicles: [ACTIVE_TRUCK] })
+    useMapStore.setState({ assets: [{ ...ASSET_OK, status: 'DAMAGED' }], incidents: [] })
+
+    renderLayer()
+
+    expect(screen.getByLabelText('Vehículo asignado')).toBeInTheDocument()
+  })
+
+  it('does not offer the assignment control for an OUT_OF_SERVICE asset', () => {
+    useVehiclesStore.setState({ vehicles: [ACTIVE_TRUCK] })
+    useMapStore.setState({ assets: [ASSET_OUT_OF_SERVICE], incidents: [] })
 
     renderLayer()
 
     expect(screen.queryByLabelText('Vehículo asignado')).not.toBeInTheDocument()
     expect(
-      screen.getByText('La asignación de vehículo requiere que el activo esté en estado OK.')
+      screen.getByText(
+        'La asignación de vehículo no está disponible: el activo está fuera de servicio.'
+      )
     ).toBeInTheDocument()
+  })
+
+  it('still renders while the zones query is loading (zones is undefined)', () => {
+    mockedUseZonesQuery.mockReturnValue({ data: undefined } as unknown as UseQueryResult<Zone[]>)
+    useVehiclesStore.setState({ vehicles: [ACTIVE_TRUCK] })
+    useMapStore.setState({ assets: [ASSET_OK], incidents: [] })
+
+    renderLayer()
+
+    expect(screen.getAllByTestId('marker')).toHaveLength(1)
+  })
+
+  it('assigns the selected vehicle to the asset', async () => {
+    const user = userEvent.setup()
+    useVehiclesStore.setState({ vehicles: [ACTIVE_TRUCK] })
+    useMapStore.setState({ assets: [ASSET_OK], incidents: [] })
+
+    renderLayer()
+
+    await user.click(screen.getByLabelText('Vehículo asignado'))
+    await user.click(await screen.findByRole('option', { name: 'Camión (ABC123)' }))
+
+    expect(useAssignmentsStore.getState().assetToVehicle[ASSET_OK.id]).toBe(ACTIVE_TRUCK.id)
+  })
+
+  it('clears the assigned vehicle from the asset', async () => {
+    const user = userEvent.setup()
+    useVehiclesStore.setState({ vehicles: [ACTIVE_TRUCK] })
+    useAssignmentsStore.setState({
+      assetToVehicle: { [ASSET_OK.id]: ACTIVE_TRUCK.id },
+      incidentToVehicle: {}
+    })
+    useMapStore.setState({ assets: [ASSET_OK], incidents: [] })
+
+    renderLayer()
+
+    await user.click(screen.getByLabelText('Vehículo asignado'))
+    await user.click(await screen.findByRole('option', { name: 'Sin asignar' }))
+
+    expect(useAssignmentsStore.getState().assetToVehicle[ASSET_OK.id]).toBeUndefined()
   })
 })

@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
-import { Button, Checkbox, CheckboxGroup, Flex, Popover, Text } from '@radix-ui/themes'
+import { Flex } from '@radix-ui/themes'
 import { useMapStore } from '../store/useMapStore'
+import { HeatmapFilterGroup } from './HeatmapFilterGroup'
 import type { IncidentStatus, IncidentType } from '../../../shared/types/domain.types'
 
 const STATUS_OPTIONS: { value: IncidentStatus; label: string }[] = [
@@ -16,115 +17,33 @@ const TYPE_OPTIONS: { value: IncidentType; label: string }[] = [
   { value: 'OTHER', label: 'Otro' }
 ]
 
-function triggerLabel(selected: unknown[], total: number, allLabel: string): string {
-  if (selected.length === 0) {
-    return 'Ninguno'
-  }
-  if (selected.length === total) {
-    return allLabel
-  }
-  return `${selected.length} seleccionados`
-}
-
 /**
- * Heatmap status/type filters (docs/feature/10-maps-create.md, "Heatmap"),
- * allowing one/several/all values per filter independently (CA-06). Each
- * popover includes a "Todos" shortcut that selects/clears the whole group.
+ * Heatmap status/type filters for incidents (docs/feature/10-maps-create.md,
+ * "Heatmap"), allowing one/several/all values per filter independently
+ * (CA-06). Delegates each filter to the shared `HeatmapFilterGroup`, the same
+ * component `AssetHeatmapFilters` uses for assets
+ * (docs/feature/14-assets-in-heatmap.md).
  */
 export function HeatmapFilters(): JSX.Element {
   const heatmapFilters = useMapStore((state) => state.heatmapFilters)
   const setHeatmapFilters = useMapStore((state) => state.setHeatmapFilters)
 
-  const allStatusesSelected = heatmapFilters.statuses.length === STATUS_OPTIONS.length
-  const allTypesSelected = heatmapFilters.types.length === TYPE_OPTIONS.length
-
   return (
     <Flex gap="4" align="end" data-testid="heatmap-filters">
-      <Flex direction="column" gap="1">
-        <Text size="2" color="gray">
-          Estado
-        </Text>
-        <Popover.Root>
-          <Popover.Trigger>
-            <Button variant="surface" color="gray" aria-label="Estado del heatmap">
-              {triggerLabel(heatmapFilters.statuses, STATUS_OPTIONS.length, 'Todos')}
-            </Button>
-          </Popover.Trigger>
-          <Popover.Content>
-            <Flex direction="column" gap="2">
-              <Text as="label" size="2">
-                <Flex gap="2" align="center">
-                  <Checkbox
-                    checked={allStatusesSelected}
-                    onCheckedChange={(checked) =>
-                      setHeatmapFilters({
-                        ...heatmapFilters,
-                        statuses: checked ? STATUS_OPTIONS.map((option) => option.value) : []
-                      })
-                    }
-                  />
-                  Todos
-                </Flex>
-              </Text>
-              <CheckboxGroup.Root
-                value={heatmapFilters.statuses}
-                onValueChange={(value) =>
-                  setHeatmapFilters({ ...heatmapFilters, statuses: value as IncidentStatus[] })
-                }
-              >
-                {STATUS_OPTIONS.map((option) => (
-                  <CheckboxGroup.Item key={option.value} value={option.value}>
-                    {option.label}
-                  </CheckboxGroup.Item>
-                ))}
-              </CheckboxGroup.Root>
-            </Flex>
-          </Popover.Content>
-        </Popover.Root>
-      </Flex>
-
-      <Flex direction="column" gap="1">
-        <Text size="2" color="gray">
-          Tipo
-        </Text>
-        <Popover.Root>
-          <Popover.Trigger>
-            <Button variant="surface" color="gray" aria-label="Tipo de incidente del heatmap">
-              {triggerLabel(heatmapFilters.types, TYPE_OPTIONS.length, 'Todos')}
-            </Button>
-          </Popover.Trigger>
-          <Popover.Content>
-            <Flex direction="column" gap="2">
-              <Text as="label" size="2">
-                <Flex gap="2" align="center">
-                  <Checkbox
-                    checked={allTypesSelected}
-                    onCheckedChange={(checked) =>
-                      setHeatmapFilters({
-                        ...heatmapFilters,
-                        types: checked ? TYPE_OPTIONS.map((option) => option.value) : []
-                      })
-                    }
-                  />
-                  Todos
-                </Flex>
-              </Text>
-              <CheckboxGroup.Root
-                value={heatmapFilters.types}
-                onValueChange={(value) =>
-                  setHeatmapFilters({ ...heatmapFilters, types: value as IncidentType[] })
-                }
-              >
-                {TYPE_OPTIONS.map((option) => (
-                  <CheckboxGroup.Item key={option.value} value={option.value}>
-                    {option.label}
-                  </CheckboxGroup.Item>
-                ))}
-              </CheckboxGroup.Root>
-            </Flex>
-          </Popover.Content>
-        </Popover.Root>
-      </Flex>
+      <HeatmapFilterGroup
+        label="Estado"
+        triggerAriaLabel="Estado del heatmap"
+        options={STATUS_OPTIONS}
+        selected={heatmapFilters.statuses}
+        onChange={(statuses) => setHeatmapFilters({ ...heatmapFilters, statuses })}
+      />
+      <HeatmapFilterGroup
+        label="Tipo"
+        triggerAriaLabel="Tipo de incidente del heatmap"
+        options={TYPE_OPTIONS}
+        selected={heatmapFilters.types}
+        onChange={(types) => setHeatmapFilters({ ...heatmapFilters, types })}
+      />
     </Flex>
   )
 }

@@ -83,9 +83,10 @@ Cada activo se representa como un marcador cuyo color depende de su estado (pale
 
 ### 3.2 Mapa de calor (heatmap)
 
-- Existe un check, tildado por defecto, que activa/desactiva el mapa de calor sobre la concentración de incidentes de la zona.
-- Con el mapa de calor activo aparece un cuadro (leyenda) a la derecha del mapa, fuera del área del mapa, mostrando colores y su estado equivalente (resuelto en **§10.7**): `REPORTED` azul, `IN_PROGRESS` amarillo, `RESOLVED` verde.
-- El mapa de calor permite filtrar por Estado (`REPORTED` | `IN_PROGRESS` | `RESOLVED`) y por Tipo (`OVERFLOW` | `DAMAGE` | `LITTERING` | `OTHER`), pudiendo seleccionarse uno, varios o todos los valores.
+- Existe un check, tildado por defecto, que activa/desactiva el mapa de calor sobre la concentración de puntos de la zona.
+- Con el mapa de calor activo aparece un cuadro (leyenda) a la derecha del mapa, fuera del área del mapa, mostrando colores y su estado equivalente (resuelto en **§10.7**): `REPORTED` azul, `IN_PROGRESS` amarillo, `RESOLVED` violeta (actualizado 2026-07-06, ver §10.7 — antes verde).
+- El mapa de calor permite filtrar los incidentes por Estado (`REPORTED` | `IN_PROGRESS` | `RESOLVED`) y por Tipo (`OVERFLOW` | `DAMAGE` | `LITTERING` | `OTHER`), pudiendo seleccionarse uno, varios o todos los valores.
+- **Los activos también irradian** (ampliación 2026-07-06, pedido del usuario — ver [docs/feature/14-assets-in-heatmap.md](./feature/14-assets-in-heatmap.md)): además de los incidentes, el heatmap proyecta la concentración de activos, cada uno coloreado por su estado con la misma paleta del marcador (§3.1: `OK` verde, `FULL` rojo, `DAMAGED` naranja, `OUT_OF_SERVICE` negro). Se filtran con controles propios por Estado de activo (`OK` | `FULL` | `DAMAGED` | `OUT_OF_SERVICE`) y por Tipo (`CONTAINER` | `BIN` | `BENCH`), uno/varios/todos, independientes de los filtros de incidente. La leyenda del heatmap suma una subsección "Activos" con esos 4 colores.
 
 ### 3.3 Tooltips
 
@@ -259,7 +260,7 @@ El backend mock actual no expone `POST /zones` ni ningún endpoint de actualizac
 4. Los filtros se pueden combinar entre sí y actualizan la información mostrada sin nuevas consultas al backend.
 5. Las tablas paginan de a 15 registros.
 6. El mapa de calor se activa/desactiva con un check habilitado por defecto.
-7. El mapa de calor filtra incidentes por tipo y estado, pudiendo seleccionarse uno, varios o todos.
+7. El mapa de calor filtra incidentes por tipo y estado, pudiendo seleccionarse uno, varios o todos. Los activos también irradian y se filtran por su propio estado (`OK`/`FULL`/`DAMAGED`/`OUT_OF_SERVICE`) y tipo (`CONTAINER`/`BIN`/`BENCH`), cada uno coloreado por su estado (ampliación 2026-07-06, ver [docs/feature/14-assets-in-heatmap.md](./feature/14-assets-in-heatmap.md)).
 8. Los marcadores de activos usan colores por estado: `OK` verde, `FULL` rojo, `DAMAGED` naranja, `OUT_OF_SERVICE` negro.
 9. Al hacer hover sobre un marcador se ve un tooltip con tipo y estado del incidente asociado; si el activo no tiene incidente asociado, muestra "Estado OK." en verde.
 10. La leyenda del mapa de calor muestra `REPORTED` azul, `IN_PROGRESS` amarillo, `RESOLVED` verde.
@@ -373,11 +374,22 @@ Al implementar, `main.tsx` deja de montar `<App />` y pasa a montar `<RouterProv
 
 El marcador coloreado en el mapa representa el estado de un **activo**, pero el tooltip al hacer hover muestra tipo y estado de un **incidente**. El scope no aclaraba qué se muestra en el tooltip de un activo sin incidente asociado, ni cómo se tratan los incidentes sin activo asociado.
 
-**Resolución (confirmada):** si el activo no tiene un incidente asociado, el tooltip muestra la leyenda "Estado OK." en verde. Para los incidentes, tanto los asociados a un activo como los que no tienen activo asociado, se mantiene siempre la paleta de estado de incidente (§10.7): `REPORTED` azul, `IN_PROGRESS` amarillo, `RESOLVED` verde.
+**Resolución (confirmada):** si el activo no tiene un incidente asociado, el tooltip muestra la etiqueta de su propio `AssetStatus` (`OK`, "Completo", "Dañado" o "Fuera de servicio") en el color correspondiente al marcador. Para los incidentes, tanto los asociados a un activo como los que no tienen activo asociado, se mantiene siempre la paleta de estado de incidente (§10.7): `REPORTED` azul, `IN_PROGRESS` amarillo, `RESOLVED` violeta.
+
+**Actualizado 2026-07-06** (pedido directo del usuario — ver
+[docs/specs/fix-resolved-color-and-asset-tooltip-status.md](./specs/fix-resolved-color-and-asset-tooltip-status.md)):
+la resolución anterior mostraba siempre el literal fijo "Estado OK" en verde cuando el activo no
+tenía incidente asociado, sin mirar su estado real — lo que producía tooltips inconsistentes con el
+color del propio marcador (p. ej. un activo `FULL`, marcador rojo, mostraba "Estado OK" en verde).
 
 ### 10.7 Colores de la leyenda del mapa de calor — RESUELTO
 
-**Resolución (confirmada):** `REPORTED` azul, `IN_PROGRESS` amarillo, `RESOLVED` verde.
+**Resolución (confirmada):** `REPORTED` azul, `IN_PROGRESS` amarillo, `RESOLVED` violeta.
+
+**Actualizado 2026-07-06** (pedido directo del usuario, ver
+[docs/specs/fix-resolved-color-and-asset-tooltip-status.md](./specs/fix-resolved-color-and-asset-tooltip-status.md)):
+`RESOLVED` pasa de verde a violeta. Afecta consistentemente al marcador de incidente independiente,
+al gradiente del heatmap y a esta leyenda, ya que los tres consumen la misma paleta.
 
 ### 10.8 Sin vehículo apto disponible — RESUELTO
 
@@ -475,11 +487,22 @@ Al implementar, `main.tsx` deja de montar `<App />` y pasa a montar `<RouterProv
 
 El marcador coloreado en el mapa representa el estado de un **activo**, pero el tooltip al hacer hover muestra tipo y estado de un **incidente**. El scope no aclaraba qué se muestra en el tooltip de un activo sin incidente asociado, ni cómo se tratan los incidentes sin activo asociado.
 
-**Resolución (confirmada):** si el activo no tiene un incidente asociado, el tooltip muestra la leyenda "Estado OK." en verde. Para los incidentes, tanto los asociados a un activo como los que no tienen activo asociado, se mantiene siempre la paleta de estado de incidente (§10.7): `REPORTED` azul, `IN_PROGRESS` amarillo, `RESOLVED` verde.
+**Resolución (confirmada):** si el activo no tiene un incidente asociado, el tooltip muestra la etiqueta de su propio `AssetStatus` (`OK`, "Completo", "Dañado" o "Fuera de servicio") en el color correspondiente al marcador. Para los incidentes, tanto los asociados a un activo como los que no tienen activo asociado, se mantiene siempre la paleta de estado de incidente (§10.7): `REPORTED` azul, `IN_PROGRESS` amarillo, `RESOLVED` violeta.
+
+**Actualizado 2026-07-06** (pedido directo del usuario — ver
+[docs/specs/fix-resolved-color-and-asset-tooltip-status.md](./specs/fix-resolved-color-and-asset-tooltip-status.md)):
+la resolución anterior mostraba siempre el literal fijo "Estado OK" en verde cuando el activo no
+tenía incidente asociado, sin mirar su estado real — lo que producía tooltips inconsistentes con el
+color del propio marcador (p. ej. un activo `FULL`, marcador rojo, mostraba "Estado OK" en verde).
 
 ### 10.7 Colores de la leyenda del mapa de calor — RESUELTO
 
-**Resolución (confirmada):** `REPORTED` azul, `IN_PROGRESS` amarillo, `RESOLVED` verde.
+**Resolución (confirmada):** `REPORTED` azul, `IN_PROGRESS` amarillo, `RESOLVED` violeta.
+
+**Actualizado 2026-07-06** (pedido directo del usuario, ver
+[docs/specs/fix-resolved-color-and-asset-tooltip-status.md](./specs/fix-resolved-color-and-asset-tooltip-status.md)):
+`RESOLVED` pasa de verde a violeta. Afecta consistentemente al marcador de incidente independiente,
+al gradiente del heatmap y a esta leyenda, ya que los tres consumen la misma paleta.
 
 ### 10.8 Sin vehículo apto disponible — RESUELTO
 
