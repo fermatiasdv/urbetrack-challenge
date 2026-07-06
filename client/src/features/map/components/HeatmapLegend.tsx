@@ -1,31 +1,54 @@
 import type { JSX } from 'react'
-import { Flex, Text } from '@radix-ui/themes'
-import {
-  INCIDENT_STATUS_COLORS,
-  INCIDENT_STATUS_LEGEND_LABELS
-} from '../constants/incidentStatusColors'
+import { INCIDENT_STATUS_LEGEND_LABELS } from '../constants/incidentStatusColors'
 import type { IncidentStatus } from '../../../shared/types/domain.types'
-import { heatmapLegendSwatchStyle } from './mapPage.styles'
+import {
+  colors,
+  dot,
+  legend,
+  legendItem,
+  section,
+  sectionHeader,
+  sectionHeaderTextGroup,
+  subtitle,
+  title
+} from './mapSidebarPanel.styles'
 
-const STATUSES: IncidentStatus[] = ['REPORTED', 'IN_PROGRESS', 'RESOLVED']
+const INCIDENT_STATUSES: IncidentStatus[] = ['REPORTED', 'IN_PROGRESS', 'RESOLVED']
 
 /**
- * Legend to the right of the map (docs/feature/10-maps-create.md, "Heatmap"),
- * visible only while the heatmap is enabled (CA-07). `REPORTED` azul,
- * `IN_PROGRESS` amarillo, `RESOLVED` verde (docs/verified-scope.md §10.7).
+ * Dedicated dot color per status for this legend (docs/specs/fix-map-sidebar-panel-style.md):
+ * uses the sidebar's own `colors` palette instead of `INCIDENT_STATUS_COLORS` (which colors the
+ * actual heatmap gradient/markers — kept separate on purpose, see the spec's "Fuera de alcance").
+ */
+const LEGEND_DOT_COLOR: Record<IncidentStatus, string> = {
+  REPORTED: colors.reported,
+  IN_PROGRESS: colors.progress,
+  RESOLVED: colors.solved
+}
+
+/**
+ * "Mapa de calor" section of the map sidebar panel (docs/specs/fix-map-sidebar-panel-style.md),
+ * visible only while the heatmap is enabled (CA-07). Shows only incident statuses now — asset
+ * statuses used to be duplicated here (docs/feature/14-assets-in-heatmap.md) but already render,
+ * always, in the "Activos" section (`AssetLegend`) above.
  */
 export function HeatmapLegend(): JSX.Element {
   return (
-    <Flex direction="column" gap="2" data-testid="heatmap-legend">
-      <Text size="2" weight="bold">
-        Referencias
-      </Text>
-      {STATUSES.map((status) => (
-        <Flex key={status} align="center" gap="2">
-          <span style={heatmapLegendSwatchStyle(INCIDENT_STATUS_COLORS[status])} />
-          <Text size="2">{INCIDENT_STATUS_LEGEND_LABELS[status]}</Text>
-        </Flex>
-      ))}
-    </Flex>
+    <div style={section} data-testid="heatmap-legend">
+      <div style={sectionHeader}>
+        <div style={sectionHeaderTextGroup}>
+          <span style={title}>Mapa de calor</span>
+          <span style={subtitle}>Incidentes resaltados</span>
+        </div>
+      </div>
+      <div style={legend}>
+        {INCIDENT_STATUSES.map((status) => (
+          <div key={status} style={legendItem}>
+            <span style={dot(LEGEND_DOT_COLOR[status])} />
+            <span>{INCIDENT_STATUS_LEGEND_LABELS[status]}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

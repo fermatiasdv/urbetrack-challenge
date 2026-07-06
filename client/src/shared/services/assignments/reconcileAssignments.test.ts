@@ -60,7 +60,20 @@ describe('reconcileAssignments', () => {
     expect(result.changed).toBe(true)
   })
 
-  it('drops an asset assignment when the asset is no longer OK', () => {
+  it('drops an asset assignment when the asset becomes OUT_OF_SERVICE', () => {
+    const result = reconcileAssignments({
+      assetToVehicle: { a1: 'v1' },
+      incidentToVehicle: {},
+      assets: [{ ...OK_ASSET, status: 'OUT_OF_SERVICE' }],
+      incidents: [],
+      vehicles: [ACTIVE_VEHICLE]
+    })
+
+    expect(result.assetToVehicle).toEqual({})
+    expect(result.changed).toBe(true)
+  })
+
+  it('keeps an asset assignment when the asset is FULL', () => {
     const result = reconcileAssignments({
       assetToVehicle: { a1: 'v1' },
       incidentToVehicle: {},
@@ -69,8 +82,21 @@ describe('reconcileAssignments', () => {
       vehicles: [ACTIVE_VEHICLE]
     })
 
-    expect(result.assetToVehicle).toEqual({})
-    expect(result.changed).toBe(true)
+    expect(result.assetToVehicle).toEqual({ a1: 'v1' })
+    expect(result.changed).toBe(false)
+  })
+
+  it('keeps an asset assignment when the asset is DAMAGED', () => {
+    const result = reconcileAssignments({
+      assetToVehicle: { a1: 'v1' },
+      incidentToVehicle: {},
+      assets: [{ ...OK_ASSET, status: 'DAMAGED' }],
+      incidents: [],
+      vehicles: [ACTIVE_VEHICLE]
+    })
+
+    expect(result.assetToVehicle).toEqual({ a1: 'v1' })
+    expect(result.changed).toBe(false)
   })
 
   it('drops an incident assignment when the incident is no longer REPORTED', () => {

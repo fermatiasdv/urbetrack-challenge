@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import 'leaflet/dist/leaflet.css'
 import { MapContainer, TileLayer } from 'react-leaflet'
-import { Flex, Heading, Skeleton } from '@radix-ui/themes'
+import { Box, Flex, Heading, Skeleton } from '@radix-ui/themes'
 import { useSyncMapStore } from '../hooks/useSyncMapStore'
 import { useMapStore } from '../store/useMapStore'
 import { useSyncAssignmentStore } from '../assignment/useSyncAssignmentStore'
@@ -11,13 +11,17 @@ import { IncidentMarkersLayer } from '../components/IncidentMarkersLayer'
 import { HeatmapLayer } from '../components/HeatmapLayer'
 import { HeatmapLegend } from '../components/HeatmapLegend'
 import { HeatmapFilters } from '../components/HeatmapFilters'
+import { AssetHeatmapFilters } from '../components/AssetHeatmapFilters'
+import { AssetLegend } from '../components/AssetLegend'
+import { HeatmapToggle } from '../components/HeatmapToggle'
 import { AvailabilityAlert } from '../components/AvailabilityAlert'
 import { MapEntityTabs } from '../components/MapEntityTabs'
 import {
   mapContainerStyle,
-  mapLayoutStyle,
-  heatmapSidebarStyle
+  mapEntityTabsContainerStyle,
+  mapLayoutStyle
 } from '../components/mapPage.styles'
+import { panel } from '../components/mapSidebarPanel.styles'
 
 // Centered roughly on `BA_BOUNDS` (api/src/utils/geo.ts), covering the 5
 // supported zones (shared/geo/zones.ts).
@@ -38,15 +42,11 @@ export function MapPage(): JSX.Element {
   const { isLoading } = useSyncMapStore()
   useSyncAssignmentStore()
   const heatmapEnabled = useMapStore((state) => state.heatmapEnabled)
-  const toggleHeatmap = useMapStore((state) => state.toggleHeatmap)
 
   return (
     <div>
       <Flex justify="between" align="center" mb="4">
         <Heading as="h1">Mapa</Heading>
-        <label>
-          <input type="checkbox" checked={heatmapEnabled} onChange={toggleHeatmap} /> Mapa de calor
-        </label>
       </Flex>
 
       {isLoading ? (
@@ -65,17 +65,32 @@ export function MapPage(): JSX.Element {
               {heatmapEnabled ? <HeatmapLayer /> : null}
             </MapContainer>
 
-            {heatmapEnabled ? (
-              <Flex direction="column" gap="4" style={heatmapSidebarStyle}>
-                <HeatmapFilters />
-                <HeatmapLegend />
-              </Flex>
-            ) : null}
+            <Flex
+              style={{
+                ...panel,
+                flexShrink: 0,
+                maxHeight: mapContainerStyle.height,
+                overflowY: 'auto'
+              }}
+            >
+              <HeatmapToggle />
+              <AssetLegend>
+                {heatmapEnabled ? (
+                  <>
+                    <HeatmapFilters />
+                    <AssetHeatmapFilters />
+                  </>
+                ) : null}
+              </AssetLegend>
+              {heatmapEnabled ? <HeatmapLegend /> : null}
+            </Flex>
           </Flex>
 
           <AvailabilityAlert />
 
-          <MapEntityTabs />
+          <Box style={mapEntityTabsContainerStyle}>
+            <MapEntityTabs />
+          </Box>
         </Flex>
       )}
     </div>

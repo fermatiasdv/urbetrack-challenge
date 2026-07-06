@@ -130,7 +130,9 @@ esto (§10.5, ya resuelto y validado por MAP-00).
 ### Tooltip (hover sobre marcador de activo)
 
 - Con incidente asociado: `Tipo de incidente: <TYPE>` / `Estado del incidente: <STATUS>`.
-- Sin incidente asociado: `Estado OK` en verde (texto literal, `verified-scope.md` §10.6).
+- Sin incidente asociado: la etiqueta del propio `AssetStatus` del activo (`OK`, "Completo",
+  "Dañado" o "Fuera de servicio") en el color correspondiente al marcador (`verified-scope.md`
+  §10.6, actualizado 2026-07-06 — antes mostraba siempre el literal fijo "Estado OK" en verde).
 
 ### Heatmap (`leaflet.heat`)
 
@@ -138,7 +140,12 @@ esto (§10.5, ya resuelto y validado por MAP-00).
 - Filtra por estado (`REPORTED`/`IN_PROGRESS`/`RESOLVED`) y por tipo
   (`OVERFLOW`/`DAMAGE`/`LITTERING`/`OTHER`), uno/varios/todos en cada filtro (AND entre ambos).
 - Leyenda a la derecha del mapa, visible mientras el heatmap está activo: `REPORTED` azul,
-  `IN_PROGRESS` amarillo, `RESOLVED` verde.
+  `IN_PROGRESS` amarillo, `RESOLVED` violeta (actualizado 2026-07-06, antes verde).
+- **Los activos también irradian** (ampliación 2026-07-06, ver "Addendum 3" y
+  [docs/feature/14-assets-in-heatmap.md](./14-assets-in-heatmap.md)): además de los incidentes, el
+  heatmap proyecta una capa por estado de activo, coloreada con `ASSET_MARKER_COLORS` (`OK` verde,
+  `FULL` rojo, `DAMAGED` naranja, `OUT_OF_SERVICE` negro), filtrable por estado y tipo de activo con
+  la misma mecánica que los incidentes, y con su propia subsección en la leyenda.
 
 ### Tabs (debajo del mapa)
 
@@ -423,7 +430,9 @@ de solo lectura sin acciones dentro de las tabs del mapa, se ajusta como fast-fo
 - **CA-08:** Los incidentes `OVERFLOW` se asocian al activo compatible más cercano dentro de 100m.
 - **CA-09:** Los incidentes sin activo asociado continúan siendo visibles.
 - **CA-10:** Los tooltips muestran información del incidente asociado.
-- **CA-11:** Los activos sin incidente muestran "Estado OK" en verde.
+- **CA-11:** Los activos sin incidente muestran la etiqueta de su propio estado (`OK`, "Completo",
+  "Dañado" o "Fuera de servicio") en el color correspondiente (actualizado 2026-07-06, antes
+  mostraban siempre "Estado OK" en verde).
 - **CA-12:** *(diferido a spec 11)* La alerta de disponibilidad se muestra cuando no hay vehículos
   disponibles.
 - **CA-13:** Debajo del mapa hay 3 pestañas (Activos/Vehículos/Incidentes) que muestran la tabla
@@ -589,4 +598,32 @@ Sin cambios de contrato de componentes ni de la sección 6 — este addendum sol
 pese a `height: 520px` correcto; pendiente re-verificar tras aplicar el cambio. Mismo bloqueo de
 `pnpm`/`typecheck`/`test` en este mount que en los hallazgos anteriores — no se pudo correr la suite
 automatizada en esta sesión.
+
+## Addendum 3 — activos irradiando en el heatmap (2026-07-06)
+
+**Pedido del usuario:** que **todos** los puntos del mapa irradien calor, cada uno con su color, no
+sólo los incidentes. Hoy el heatmap sólo proyecta incidentes; los activos son marcadores puntuales
+sin halo. El detalle completo (diseño, filtros de activo, densidad de 1500 puntos, leyenda extendida,
+archivos, tests) vive en su spec propio: **[docs/feature/14-assets-in-heatmap.md](./14-assets-in-heatmap.md)**
+(estado: propuesto, pendiente de aprobación — spec-first).
+
+**Impacto sobre este documento (cuando 14 se apruebe e implemente):**
+
+- **"Reglas de negocio" → "Heatmap":** ya anotado arriba — los activos irradian una capa por estado,
+  coloreada con `ASSET_MARKER_COLORS`, filtrable por estado/tipo de activo.
+- **Sección 6 "Componentes":**
+  - `HeatmapLayer` monta, además de una capa monocromática por estado de **incidente**, una por
+    estado de **activo** (mismo mecanismo `L.heatLayer` + gradiente monocromático, ya que
+    `leaflet.heat` no colorea puntos individuales dentro de una capa). Se agregan `assets` y
+    `assetHeatmapFilters` a sus dependencias.
+  - Se agrega `AssetHeatmapFilters` (filtros de estado/tipo de activo) junto a `HeatmapFilters`, y un
+    `HeatmapFilterGroup` genérico reutilizado por ambos.
+  - `HeatmapLegend` gana una subsección "Activos".
+- **Sección 7 "Validación (zod)":** se agrega `AssetHeatmapFilterSchema`
+  (`statuses: AssetStatus[]`, `types: AssetType[]`).
+- **Criterios de aceptación:** los CA de esta ampliación se numeran y verifican en el spec 14
+  (CA-01…CA-08 de ese documento), no se renumeran los CA-01…CA-14 de este.
+
+Sin cambios sobre el resto de este spec — la asociación incidente↔activo, las tabs, los tooltips y
+el resto de la feature no se ven afectados.
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            

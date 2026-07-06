@@ -101,6 +101,10 @@ beforeEach(() => {
       statuses: ['REPORTED', 'IN_PROGRESS', 'RESOLVED'],
       types: ['OVERFLOW', 'DAMAGE', 'LITTERING', 'OTHER']
     },
+    assetHeatmapFilters: {
+      statuses: ['OK', 'FULL', 'DAMAGED', 'OUT_OF_SERVICE'],
+      types: ['CONTAINER', 'BIN', 'BENCH']
+    },
     selectedZone: null
   })
   // `useVehiclesQuery` is mocked above, so hydration never runs here: tests
@@ -124,16 +128,18 @@ afterEach(() => {
 })
 
 describe('MapPage', () => {
-  it('renders the map, the heatmap legend/filters and the 3 entity tabs', async () => {
+  it('renders the map, the asset legend, the heatmap legend/filters and the 3 entity tabs', async () => {
     renderPage()
 
     expect(await screen.findByTestId('map-container')).toBeInTheDocument()
+    expect(screen.getByTestId('asset-legend')).toBeInTheDocument()
     expect(screen.getByTestId('heatmap-legend')).toBeInTheDocument()
     expect(screen.getByTestId('heatmap-filters')).toBeInTheDocument()
+    expect(screen.getByTestId('asset-heatmap-filters')).toBeInTheDocument()
     expect(screen.getByTestId('assets-table')).toBeInTheDocument()
   })
 
-  it('hides the heatmap legend/filters when the heatmap is toggled off', async () => {
+  it('hides the heatmap legend/filters but keeps the asset legend when the heatmap is toggled off', async () => {
     const user = userEvent.setup()
     renderPage()
 
@@ -142,6 +148,8 @@ describe('MapPage', () => {
 
     expect(screen.queryByTestId('heatmap-legend')).not.toBeInTheDocument()
     expect(screen.queryByTestId('heatmap-filters')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('asset-heatmap-filters')).not.toBeInTheDocument()
+    expect(screen.getByTestId('asset-legend')).toBeInTheDocument()
   })
 
   it('renders AvailabilityAlert below the map and above MapEntityTabs (CA-06)', async () => {

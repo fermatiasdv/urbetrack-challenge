@@ -8,7 +8,14 @@ import {
   VEHICLE_STATUS_FILTER_OPTIONS,
   VEHICLE_TYPE_FILTER_OPTIONS
 } from '../constants/vehicleFilterOptions'
-import { filterBarContainerStyle, filterFieldLabelStyle } from './vehiclesFilterBar.styles'
+import {
+  field,
+  filterContainer,
+  label,
+  plateInput,
+  resetButton,
+  select
+} from './vehiclesFilterBar.styles'
 
 /** Trigger label for the Zona popover (docs/feature/04-vehicles-filtertable.md, Decisión 4). */
 function zoneFilterLabel(zoneIds: string[], zonesById: Map<string, string>): string {
@@ -45,9 +52,9 @@ export function VehiclesFilterBar(): JSX.Element {
   const zonesById = new Map((zones ?? []).map((zone) => [zone.id, zone.name]))
 
   return (
-    <Flex wrap="wrap" gap="4" align="end" style={filterBarContainerStyle} mb="4">
-      <Flex direction="column" style={{ flex: '1 1 240px', minWidth: '240px' }}>
-        <Text as="label" htmlFor="vehicle-plate-filter" style={filterFieldLabelStyle}>
+    <Flex wrap="wrap" style={filterContainer} mb="4">
+      <Flex direction="column" style={field}>
+        <Text as="label" htmlFor="vehicle-plate-filter" style={label}>
           Buscar por placa
         </Text>
         <TextField.Root
@@ -55,6 +62,7 @@ export function VehiclesFilterBar(): JSX.Element {
           placeholder="ABC-1234"
           value={plate}
           onChange={(event) => setPlate(event.target.value)}
+          style={plateInput}
         >
           <TextField.Slot>
             <IdCard size={16} aria-hidden />
@@ -62,12 +70,12 @@ export function VehiclesFilterBar(): JSX.Element {
         </TextField.Root>
       </Flex>
 
-      <Flex direction="column" style={{ width: '192px' }}>
-        <Text as="label" style={filterFieldLabelStyle}>
+      <Flex direction="column" style={field}>
+        <Text as="label" style={label}>
           Tipo
         </Text>
         <Select.Root value={type} onValueChange={setType}>
-          <Select.Trigger aria-label="Tipo" />
+          <Select.Trigger aria-label="Tipo" style={select} />
           <Select.Content>
             {VEHICLE_TYPE_FILTER_OPTIONS.map((option) => (
               <Select.Item key={option.value} value={option.value}>
@@ -78,12 +86,12 @@ export function VehiclesFilterBar(): JSX.Element {
         </Select.Root>
       </Flex>
 
-      <Flex direction="column" style={{ width: '192px' }}>
-        <Text as="label" style={filterFieldLabelStyle}>
+      <Flex direction="column" style={field}>
+        <Text as="label" style={label}>
           Capacidad
         </Text>
         <Select.Root value={capacity} onValueChange={setCapacity}>
-          <Select.Trigger aria-label="Capacidad" />
+          <Select.Trigger aria-label="Capacidad" style={select} />
           <Select.Content>
             {CAPACITY_FILTER_OPTIONS.map((option) => (
               <Select.Item key={option.value} value={option.value}>
@@ -94,12 +102,12 @@ export function VehiclesFilterBar(): JSX.Element {
         </Select.Root>
       </Flex>
 
-      <Flex direction="column" style={{ width: '192px' }}>
-        <Text as="label" style={filterFieldLabelStyle}>
+      <Flex direction="column" style={field}>
+        <Text as="label" style={label}>
           Estado
         </Text>
         <Select.Root value={status} onValueChange={setStatus}>
-          <Select.Trigger aria-label="Estado" />
+          <Select.Trigger aria-label="Estado" style={select} />
           <Select.Content>
             {VEHICLE_STATUS_FILTER_OPTIONS.map((option) => (
               <Select.Item key={option.value} value={option.value}>
@@ -110,13 +118,13 @@ export function VehiclesFilterBar(): JSX.Element {
         </Select.Root>
       </Flex>
 
-      <Flex direction="column" style={{ width: '192px' }}>
-        <Text as="label" style={filterFieldLabelStyle}>
+      <Flex direction="column" style={field}>
+        <Text as="label" style={label}>
           Zona
         </Text>
         <Popover.Root>
           <Popover.Trigger>
-            <Button variant="surface" color="gray" aria-label="Zona">
+            <Button variant="surface" color="gray" aria-label="Zona" style={select}>
               {zoneFilterLabel(zoneIds, zonesById)}
             </Button>
           </Popover.Trigger>
@@ -132,7 +140,7 @@ export function VehiclesFilterBar(): JSX.Element {
         </Popover.Root>
       </Flex>
 
-      <Button variant="soft" color="gray" onClick={reset}>
+      <Button variant="soft" color="gray" onClick={reset} style={resetButton}>
         Restablecer
       </Button>
     </Flex>

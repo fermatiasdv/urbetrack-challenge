@@ -1,8 +1,11 @@
 import type { JSX } from 'react'
 import { Tabs } from '@radix-ui/themes'
 import { AssetsTable } from '../../assets/components/AssetsTable'
+import { AssetModal } from '../../assets/components/AssetModal'
 import { VehiclesTable } from '../../vehicles/components/VehiclesTable'
+import { VehicleModal } from '../../vehicles/components/VehicleModal'
 import { IncidentsTable } from '../../incidents/components/IncidentsTable'
+import { IncidentModal } from '../../incidents/components/IncidentModal'
 import { useVehiclesQuery } from '../../vehicles/api/useVehiclesQuery'
 
 /**
@@ -20,6 +23,14 @@ import { useVehiclesQuery } from '../../vehicles/api/useVehiclesQuery'
  * first visiting `/vehiculos` — same "query hydrates store, hydrated once"
  * pattern, `hasHydrated` prevents a duplicate/competing hydration if both
  * pages mount in the same session.
+ *
+ * Also mounts `AssetModal`/`VehicleModal`/`IncidentModal` (docs/specs/
+ * fix-map-entity-tabs-modals.md): each row's "Editar"/"Ver detalle" action
+ * only flips a state flag on a global zustand store (`useXModalStore`), not
+ * tied to the route. Without its own `<XModal />` mounted here, opening one
+ * from Mapa changed that global state but rendered nothing visible on this
+ * page — the overlay only appeared once the user navigated to that entity's
+ * own page (the only place it used to be mounted).
  */
 export function MapEntityTabs(): JSX.Element {
   useVehiclesQuery()
@@ -41,6 +52,10 @@ export function MapEntityTabs(): JSX.Element {
       <Tabs.Content value="incidents">
         <IncidentsTable />
       </Tabs.Content>
+
+      <AssetModal />
+      <VehicleModal />
+      <IncidentModal />
     </Tabs.Root>
   )
 }

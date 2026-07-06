@@ -24,9 +24,11 @@ function findAssociatedIncident(
  * (docs/feature/10-maps-create.md, CA-03). Shows `AssetTooltip` on hover
  * (CA-10/CA-11) and, on click, a `Popup` with the manual vehicle-assignment
  * control (docs/feature/maps-asign-vehicle.md §5) — but the control only
- * appears for assets in status `OK` (assignment gating). If more than one
- * incident is associated to the same asset (unexpected with the current
- * 40-incident fixed dataset), the first match is used.
+ * appears for assets in status `OK`, `FULL` or `DAMAGED` (assignment gating,
+ * docs/specs/fix-asset-assignment-ok-full-damaged.md); `OUT_OF_SERVICE` is the
+ * only status that blocks it. If more than one incident is associated to the
+ * same asset (unexpected with the current 40-incident fixed dataset), the
+ * first match is used.
  */
 export function AssetMarkersLayer(): JSX.Element {
   const assets = useMapStore((state) => state.assets)
@@ -51,10 +53,13 @@ export function AssetMarkersLayer(): JSX.Element {
           icon={createColorMarkerIcon(assetMarkerColor(asset.status))}
         >
           <Tooltip>
-            <AssetTooltip associatedIncident={findAssociatedIncident(asset, incidents)} />
+            <AssetTooltip
+              associatedIncident={findAssociatedIncident(asset, incidents)}
+              assetStatus={asset.status}
+            />
           </Tooltip>
           <Popup>
-            {asset.status === 'OK' ? (
+            {asset.status !== 'OUT_OF_SERVICE' ? (
               <AssignmentControl
                 eligibleVehicles={eligibleVehiclesForAsset(asset, vehicles, zonesById)}
                 assignedVehicleId={assetToVehicle[asset.id] ?? null}
@@ -63,7 +68,7 @@ export function AssetMarkersLayer(): JSX.Element {
               />
             ) : (
               <Text as="p" size="2" color="gray">
-                La asignación de vehículo requiere que el activo esté en estado OK.
+                La asignación de vehículo no está disponible: el activo está fuera de servicio.
               </Text>
             )}
           </Popup>

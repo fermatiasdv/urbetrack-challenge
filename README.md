@@ -2,7 +2,7 @@
 
 Sistema de gestión de higiene urbana: mapa interactivo con activos (contenedores, cestos, bancos), incidentes y vehículos de recolección, distribuidos en 5 zonas de CABA (Microcentro, Palermo, Recoleta, Belgrano, Caballito). Incluye mapa de calor de incidentes, tablas filtrables con paginación, modal de detalle/edición de vehículos y un motor de asignación automática de vehículos a incidentes según reglas de compatibilidad, zona y capacidad.
 
-🔗 **Demo desplegada:** https://fermatiasdv.github.io/urbetrack-challenge/
+🔗 **Demo desplegada:** https://fermatiasdv.github.io/
 
 ## Stack
 
@@ -99,3 +99,7 @@ El backlog vive en GitHub Projects: [Urbetrack — Project](https://github.com/u
 ## API mock
 
 Documentación completa de endpoints en [`API.md`](./API.md) y [`docs/METHODS.md`](./docs/METHODS.md), o vía Swagger UI (`pnpm dev:api`, luego `http://localhost:3000/api-docs`). Recursos: `zones`, `vehicles`, `assets`, `incidents` (todos con `GET` y búsqueda por `:id`; el mock no expone `POST` de zonas ni `PUT`/`PATCH`/`DELETE` en ninguna entidad).
+
+## Autor
+
+Fernando del Valle — [github.com/fermatiasdv](https://github.com/fermatiasdv)

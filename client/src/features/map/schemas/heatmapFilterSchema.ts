@@ -14,3 +14,15 @@ export const HeatmapFilterSchema = z.object({
 })
 
 export type HeatmapFilterSchemaValues = z.infer<typeof HeatmapFilterSchema>
+
+/**
+ * Validates the shape of `MapStore.assetHeatmapFilters`
+ * (docs/feature/14-assets-in-heatmap.md). Parallel to `HeatmapFilterSchema`
+ * but over `AssetStatus`/`AssetType`.
+ */
+export const AssetHeatmapFilterSchema = z.object({
+  statuses: z.array(z.enum(['OK', 'DAMAGED', 'FULL', 'OUT_OF_SERVICE'])),
+  types: z.array(z.enum(['BIN', 'CONTAINER', 'BENCH']))
+})
+
+export type AssetHeatmapFilterSchemaValues = z.infer<typeof AssetHeatmapFilterSchema>
