@@ -22,7 +22,13 @@ are in **Spanish**. This convention applies to every future feature.
    acceptance criteria below.
 
 **Out of scope (deferred to a future feature):** application architecture / folder conventions,
-routing, the real map view, and API integration. The example uses local fake data only.
+the real map view, and API integration. The example uses local fake data only.
+
+> **Update (2026-07-05):** *routing* is no longer deferred — it is now covered by the scope change
+> in [`docs/chore/03-navigation-shell-router.md`](../chore/03-navigation-shell-router.md), which adds
+> the navigation shell and TanStack Router. This spec's only role in that change is to **declare the
+> new installs** (see §3 below); the router wiring and folder conventions live in
+> [`architecture.md`](./architecture.md) → "Ruteo y navegación".
 
 ## 2. Target structure
 
@@ -63,14 +69,19 @@ root/
 
 - Core: `react`, `react-dom`, `typescript`, `vite`, `@vitejs/plugin-react`
 - State: `zustand`, `@tanstack/react-query`
+- Routing: `@tanstack/react-router` (code-based route tree; added by the 2026-07-05 scope change —
+  see [`docs/chore/03-navigation-shell-router.md`](../chore/03-navigation-shell-router.md))
 - Maps: `leaflet`, `react-leaflet`, `@types/leaflet` (installed; map view deferred)
 - UI: `@radix-ui/themes` (provides `Skeleton`), `@tanstack/react-table`
+- Icons: `lucide-react` (provides the `Truck` logo for the navigation sidebar; added by the same
+  scope change)
 - Validation: `zod`
 - Testing: `vitest`, `@testing-library/react`, `@testing-library/user-event`,
   `@testing-library/jest-dom`, `jsdom`
 - DX: `eslint`, `typescript-eslint`, `eslint-plugin-react-hooks`, `prettier`
 
-TypeScript runs in **strict** mode.
+TypeScript runs in **strict** mode. `@tanstack/react-router` and `lucide-react` ship their own types;
+no `@types/*` packages are required. Both are installed with `pnpm add` from the `client/` package.
 
 ## 4. Domain model (`component-test`)
 

@@ -117,6 +117,7 @@ Contiene la configuración global de la aplicación.
 app/
   providers/
   router/
+  layout/
   store/
   styles/
 ```
@@ -171,6 +172,49 @@ No todos los directorios son obligatorios. Cada feature define únicamente aquel
 ## Estado global y data-fetching
 
 Patrón ya establecido e implementado (ver [component-test-vehicles-table.md](./component-test-vehicles-table.md)), formalizado aquí para que sea explícito y consistente en toda feature nueva.
+
+- **Data-fetching (servidor):** `@tanstack/react-query` es responsable de traer los datos del backend mock (una única carga por pantalla, ver `verified-scope.md` §6.1). El `QueryClientProvider` se monta a nivel `app/` (hoy en `main.tsx`).
+- **Estado global (cliente):** `zustand` es la **fuente única de verdad** sobre la que trabajan mapa, tablas, filtros y modales de una feature. React Query hidrata el store al resolver la carga; a partir de ahí las mutaciones locales (p. ej. edición de placa de un vehículo) se aplican sobre el store y todas las vistas suscriptas se actualizan en tiempo real.
+- **Escrituras sin backend:** el mock no expone `PUT`/`PATCH`/`DELETE` (ver `docs/METHODS.md` → "Limitaciones conocidas"). Por eso las operaciones de escritura (edición hoy; ABMC completo a futuro) se consideran exitosas al actualizar el store, sin llamada de escritura al servidor (`verified-scope.md` §7.4).
+- **Ubicación del estado:** cada store pertenece a su feature (`features/<feature>/store/`). `app/store/` se reserva para estado verdaderamente transversal a varias features, como excepción y no como regla.
+
+---
+
+## Ruteo y navegación
+
+Introducido por el cambio de alcance [chore 03](../chore/03-navigation-shell-router.md). El SPA usa **`@tanstack/react-router`** en configuración **code-based** (árbol de rutas en TypeScript, fuertemente tipado), sin file-based routing ni plugin de build, para no romper el patrón feature-sliced.
+
+### Shell persistente
+
+La navegación se estructura como un **layout persistente**: una **ruta raíz** renderiza el shell (barra lateral + `<Outlet />`), y cada pantalla es una **ruta hija** que se renderiza dentro del `Outlet`. Como la sidebar vive en la ruta raíz, **no se re-renderiza** al navegar entre pantallas: solo cambia el contenido del `Outlet`.
+
+```text
+app/
+  router/
+    routes.tsx   # rootRoute (AppLayout) + 5 rutas hijas
+    router.ts    # createRouter(routeTree) + declare module 'register' (tipado)
+  layout/
+    AppLayout.tsx  # <Sidebar /> + <Outlet />
+    Sidebar.tsx    # <Truck/> (lucide-react) + "URBETRACK" + enlaces de navegación
+```
+
+`main.tsx` monta `<RouterProvider router={router} />` dentro de los providers existentes (`QueryClientProvider` + `<Theme>` de Radix), en lugar del actual `<App />`.
+
+### Mapa de rutas
+
+| Ruta | Pantalla (feature) | Contenido en este cambio |
+|---|---|---|
+| `/` | `features/dashboard` | Leyenda "Dashboard" |
+| `/mapa` | `features/map` | Leyenda "Mapa" |
+| `/activos` | `features/assets` | Leyenda "Activos" |
+| `/vehiculos` | `features/vehicles` | Leyenda "Vehículos" |
+| `/incidentes` | `features/incidents` | Leyenda "Incidentes" |
+
+Cada pantalla es un componente `pages/` dentro de su feature (`features/<feature>/pages/`), consistente con "Estructura interna de una feature". En este cambio las pantallas son **placeholders** que solo muestran su leyenda; su contenido funcional (mapa, tablas, filtros, ABMC) se desarrolla en specs de feature posteriores.
+
+### Íconos
+
+Los íconos de la UI (empezando por el logo `Truck` de la sidebar) se toman de **`lucide-react`**. Se declara como instalación en [component-test-vehicles-table.md](./component-test-vehicles-table.md) §3.
 
 ### Librerías
 

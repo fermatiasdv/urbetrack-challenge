@@ -25,3 +25,8 @@ if (typeof window !== 'undefined' && !('ResizeObserver' in window)) {
   // @ts-expect-error -- test-only stub
   window.ResizeObserver = ResizeObserverStub
 }
+
+// jsdom does not implement scrollTo; TanStack Router's scroll restoration calls it on navigation.
+if (typeof window !== 'undefined' && !window.scrollTo) {
+  window.scrollTo = () => {}
+}
