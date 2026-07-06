@@ -1,13 +1,14 @@
 import { Outlet } from '@tanstack/react-router'
-import { Sidebar } from './Sidebar'
+import { Box } from '@radix-ui/themes'
+import { Sidebar, SIDEBAR_WIDTH } from './Sidebar'
 
 export function AppLayout(): JSX.Element {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <Box minHeight="100vh">
       <Sidebar />
-      <main style={{ flex: 1, padding: '2rem' }}>
+      <Box ml={SIDEBAR_WIDTH} p="6">
         <Outlet />
-      </main>
-    </div>
+      </Box>
+    </Box>
   )
 }
