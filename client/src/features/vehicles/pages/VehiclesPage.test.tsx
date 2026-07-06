@@ -21,6 +21,10 @@ vi.mock('../components/VehiclesTable', () => ({
   VehiclesTable: () => <div data-testid="vehicles-table" />
 }))
 
+vi.mock('../components/VehicleModal', () => ({
+  VehicleModal: () => <div data-testid="vehicle-modal" />
+}))
+
 const mockedUseVehiclesQuery = vi.mocked(useVehiclesQuery)
 
 function renderPage() {

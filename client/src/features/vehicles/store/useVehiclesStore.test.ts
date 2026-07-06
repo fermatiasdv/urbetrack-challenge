@@ -46,3 +46,24 @@ describe('useVehiclesStore.setVehicles', () => {
     expect(useVehiclesStore.getState().hasHydrated).toBe(true)
   })
 })
+
+describe('useVehiclesStore.updateVehicle', () => {
+  it('merges the given changes into the matching vehicle only', () => {
+    useVehiclesStore.getState().setVehicles(VEHICLES)
+
+    useVehiclesStore.getState().updateVehicle('1', { plate: 'XYZ789' })
+
+    expect(useVehiclesStore.getState().vehicles).toEqual([
+      { ...VEHICLES[0], plate: 'XYZ789' },
+      VEHICLES[1]
+    ])
+  })
+
+  it('is a no-op when the id does not match any vehicle', () => {
+    useVehiclesStore.getState().setVehicles(VEHICLES)
+
+    useVehiclesStore.getState().updateVehicle('999', { plate: 'XYZ789' })
+
+    expect(useVehiclesStore.getState().vehicles).toEqual(VEHICLES)
+  })
+})
