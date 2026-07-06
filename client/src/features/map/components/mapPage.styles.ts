@@ -25,3 +25,11 @@ export const mapContainerStyle: CSSProperties = {
 export const availabilityAlertStyle: CSSProperties = {
   width: '100%'
 }
+
+/**
+ * Fixed-width container for `MapEntityTabs` (docs/specs/fix-map-entity-tabs-width.md): 75% of the
+ * screen, as a fixed value — not relative to the tables' own content.
+ */
+export const mapEntityTabsContainerStyle: CSSProperties = {
+  width: '75%'
+}

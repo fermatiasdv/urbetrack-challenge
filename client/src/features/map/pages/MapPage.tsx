@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import 'leaflet/dist/leaflet.css'
 import { MapContainer, TileLayer } from 'react-leaflet'
-import { Flex, Heading, Skeleton } from '@radix-ui/themes'
+import { Box, Flex, Heading, Skeleton } from '@radix-ui/themes'
 import { useSyncMapStore } from '../hooks/useSyncMapStore'
 import { useMapStore } from '../store/useMapStore'
 import { useSyncAssignmentStore } from '../assignment/useSyncAssignmentStore'
@@ -16,7 +16,11 @@ import { AssetLegend } from '../components/AssetLegend'
 import { HeatmapToggle } from '../components/HeatmapToggle'
 import { AvailabilityAlert } from '../components/AvailabilityAlert'
 import { MapEntityTabs } from '../components/MapEntityTabs'
-import { mapContainerStyle, mapLayoutStyle } from '../components/mapPage.styles'
+import {
+  mapContainerStyle,
+  mapEntityTabsContainerStyle,
+  mapLayoutStyle
+} from '../components/mapPage.styles'
 import { panel } from '../components/mapSidebarPanel.styles'
 
 // Centered roughly on `BA_BOUNDS` (api/src/utils/geo.ts), covering the 5
@@ -84,7 +88,9 @@ export function MapPage(): JSX.Element {
 
           <AvailabilityAlert />
 
-          <MapEntityTabs />
+          <Box style={mapEntityTabsContainerStyle}>
+            <MapEntityTabs />
+          </Box>
         </Flex>
       )}
     </div>
