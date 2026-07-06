@@ -2,6 +2,7 @@ import type { JSX } from 'react'
 import { Skeleton } from '@radix-ui/themes'
 import { useVehiclesQuery } from '../api/useVehiclesQuery'
 import { VehicleStatusCards } from '../components/VehicleStatusCards'
+import { VehiclesFilterBar } from '../components/VehiclesFilterBar'
 import { VehiclesTable } from '../components/VehiclesTable'
 
 export function VehiclesPage(): JSX.Element {
@@ -15,6 +16,7 @@ export function VehiclesPage(): JSX.Element {
       ) : (
         <>
           <VehicleStatusCards />
+          <VehiclesFilterBar />
           <VehiclesTable />
         </>
       )}
