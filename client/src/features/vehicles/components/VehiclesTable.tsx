@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-table'
 import { Table } from '@radix-ui/themes'
 import type { Vehicle } from '../types/vehicle.types'
-import { useVehiclesStore } from '../store/useVehiclesStore'
+import { useFilteredVehicles } from '../hooks/useFilteredVehicles'
 import { useZonesQuery } from '../api/useZonesQuery'
 import {
   formatCapacity,
@@ -24,9 +24,13 @@ const columnHelper = createColumnHelper<Vehicle>()
  * TanStack Table over the vehicles store, translating the mockup `<tbody>`
  * (docs/designs/03-vehicles-table.md) into dynamic rows.
  * See docs/feature/03-vehicles-table.md, "Decisiones propuestas" #1-#3.
+ *
+ * Reads from `useFilteredVehicles` (not `useVehiclesStore` directly) so the 5 filters of
+ * `VehiclesFilterBar` apply without this component knowing how filtering works
+ * (docs/feature/04-vehicles-filtertable.md, "Decisiones propuestas" #8).
  */
 export function VehiclesTable(): JSX.Element {
-  const vehicles = useVehiclesStore((state) => state.vehicles)
+  const vehicles = useFilteredVehicles()
   const { data: zones } = useZonesQuery()
 
   const zonesById = useMemo(() => {
