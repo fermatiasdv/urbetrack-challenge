@@ -257,7 +257,9 @@ Tabla de mapeo análoga para `typography` (`headline-lg` → `headlineLg`, `head
 - Wiring del archivo de tokens con `@radix-ui/themes` (mapear `colors.primary` a `accentColor`,
   `rounded` a la prop `radius` del `<Theme>`, etc.). Se hace en un spec/feature aparte cuando exista
   una pantalla real que lo requiera, para no anticipar decisiones de theming sin un consumidor
-  concreto.
+  concreto. Primer consumidor real: [docs/feature/01-modify-sidebar.md](../feature/01-modify-sidebar.md)
+  — usa componentes de `@radix-ui/themes` con `designTokens` a nivel de componente individual
+  (props + objetos de estilos puntuales), sin tocar el `<Theme>` global ni este archivo de tokens.
 - Migrar el estilo inline existente en `App.tsx` a los nuevos tokens.
 - Instalar Tailwind, Material UI o cualquier otra librería de estilos: los nombres del lineamiento
   (`rounded`, `spacing.base`) se toman como datos, no como una decisión de stack.
