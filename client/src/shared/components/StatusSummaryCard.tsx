@@ -1,29 +1,44 @@
 import type { CSSProperties, JSX } from 'react'
 import { Card, Flex, Text } from '@radix-ui/themes'
-import type { VehicleStatusCardData } from '../hooks/useVehicleStatusCards'
+import type { LucideIcon } from 'lucide-react'
 import {
   cardLabelStyle,
   cardSecondaryTextStyle,
   cardValueStyle,
   iconBoxStyleFor,
-  secondaryColorFor
-} from './vehicleStatusCard.styles'
+  secondaryColorFor,
+  type StatusCardColorRole,
+  type StatusCardSecondaryColorRole
+} from './statusSummaryCard.styles'
 
-export interface VehicleStatusCardProps {
-  data: VehicleStatusCardData
+export interface StatusSummaryCardData<TKey extends string = string> {
+  key: TKey
+  label: string
+  value: number
+  icon: LucideIcon
+  secondaryIcon?: LucideIcon
+  secondaryText: string
+  iconBoxColorRole: StatusCardColorRole
+  secondaryTextColorRole: StatusCardSecondaryColorRole
+}
+
+export interface StatusSummaryCardProps {
+  data: StatusSummaryCardData
 }
 
 /**
- * Single "bento" card of the vehicle status summary.
- * See docs/designs/02-vehicles-status-cards.md (mockup) and
- * docs/feature/02-vehicle-statuscard.md (mapping to `@radix-ui/themes` Card).
+ * Single "bento" card of a status summary (total + per-status counts).
+ * Promoted from `features/vehicles/components/VehicleStatusCard.tsx`
+ * (docs/feature/07-assets-page.md, "Generalización a `shared/`"): the component
+ * itself doesn't know about vehicles or assets, it only renders whatever
+ * `StatusSummaryCardData` it's given.
  */
-export function VehicleStatusCard({ data }: VehicleStatusCardProps): JSX.Element {
+export function StatusSummaryCard({ data }: StatusSummaryCardProps): JSX.Element {
   const Icon = data.icon
   const SecondaryIcon = data.secondaryIcon
   const secondaryTextStyle: CSSProperties = {
     ...cardSecondaryTextStyle,
-    color: secondaryColorFor(data.key)
+    color: secondaryColorFor(data.secondaryTextColorRole)
   }
 
   return (
@@ -34,7 +49,7 @@ export function VehicleStatusCard({ data }: VehicleStatusCardProps): JSX.Element
           justify="center"
           width="32px"
           height="32px"
-          style={iconBoxStyleFor(data.key)}
+          style={iconBoxStyleFor(data.iconBoxColorRole)}
         >
           <Icon size={18} aria-hidden />
         </Flex>

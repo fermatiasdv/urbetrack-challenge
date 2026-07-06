@@ -1,6 +1,5 @@
 import { useState, type JSX } from 'react'
-import { IconButton, DropdownMenu } from '@radix-ui/themes'
-import { MoreVertical } from 'lucide-react'
+import { RowActionsMenu } from '../../../shared/components/RowActionsMenu'
 import type { Vehicle } from '../../../shared/types/domain.types'
 import { useVehicleModalStore } from '../store/useVehicleModalStore'
 import { DeleteVehicleAlertDialog } from './DeleteVehicleAlertDialog'
@@ -10,14 +9,11 @@ export interface VehicleRowActionsMenuProps {
 }
 
 /**
- * Kebab menu for a table row (docs/designs/03-vehicles-table.md `more_vert`
- * button). Radix `DropdownMenu.Content` anchors right below the trigger,
- * matching "se despliega justo debajo de los puntos"
- * (docs/feature/03-vehicles-table.md "Decisiones propuestas" #3).
- *
- * "Detalles"/"Editar" set the intent on `useVehicleModalStore` (the modal
- * itself is out of scope for this feature). "Eliminar" opens
- * `DeleteVehicleAlertDialog` instead of the modal.
+ * Kebab menu for a vehicle table row. Thin wrapper over the shared
+ * `RowActionsMenu` (docs/feature/07-assets-page.md, "Generalización a
+ * `shared/`"): builds the vehicle-specific items array (Detalles/Editar
+ * dispatch to `useVehicleModalStore`, Eliminar opens
+ * `DeleteVehicleAlertDialog` instead of the modal).
  */
 export function VehicleRowActionsMenu({ vehicle }: VehicleRowActionsMenuProps): JSX.Element {
   const openModal = useVehicleModalStore((state) => state.open)
@@ -25,29 +21,14 @@ export function VehicleRowActionsMenu({ vehicle }: VehicleRowActionsMenuProps): 
 
   return (
     <>
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
-          <IconButton
-            variant="ghost"
-            color="gray"
-            aria-label={`Acciones para el vehículo ${vehicle.plate}`}
-          >
-            <MoreVertical size={18} aria-hidden />
-          </IconButton>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content>
-          <DropdownMenu.Item onSelect={() => openModal(vehicle.id, 'details')}>
-            Detalles
-          </DropdownMenu.Item>
-          <DropdownMenu.Item onSelect={() => openModal(vehicle.id, 'edit')}>
-            Editar
-          </DropdownMenu.Item>
-          <DropdownMenu.Separator />
-          <DropdownMenu.Item color="red" onSelect={() => setDeleteDialogOpen(true)}>
-            Eliminar
-          </DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu.Root>
+      <RowActionsMenu
+        triggerAriaLabel={`Acciones para el vehículo ${vehicle.plate}`}
+        items={[
+          { label: 'Detalles', onSelect: () => openModal(vehicle.id, 'details') },
+          { label: 'Editar', onSelect: () => openModal(vehicle.id, 'edit') },
+          { label: 'Eliminar', color: 'red', onSelect: () => setDeleteDialogOpen(true) }
+        ]}
+      />
 
       <DeleteVehicleAlertDialog
         vehicle={vehicle}

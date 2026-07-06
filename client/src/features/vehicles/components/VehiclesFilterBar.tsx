@@ -2,7 +2,7 @@ import type { JSX } from 'react'
 import { Button, CheckboxGroup, Flex, Popover, Select, Text, TextField } from '@radix-ui/themes'
 import { IdCard } from 'lucide-react'
 import { useVehicleFiltersStore } from '../store/useVehicleFiltersStore'
-import { useZonesQuery } from '../api/useZonesQuery'
+import { useZonesQuery } from '../../../shared/services/useZonesQuery'
 import {
   CAPACITY_FILTER_OPTIONS,
   VEHICLE_STATUS_FILTER_OPTIONS,

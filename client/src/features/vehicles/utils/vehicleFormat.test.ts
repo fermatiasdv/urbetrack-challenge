@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatCapacity, vehicleStatusLabel, vehicleTypeLabel, zoneNameFor } from './vehicleFormat'
+import { formatCapacity, vehicleStatusLabel, vehicleTypeLabel } from './vehicleFormat'
 
 describe('vehicleTypeLabel', () => {
   it('maps each VehicleType to its Spanish label', () => {
@@ -21,16 +21,5 @@ describe('formatCapacity', () => {
   it('formats with a thousands separator and a KG suffix', () => {
     expect(formatCapacity(5500)).toBe('5.500 KG')
     expect(formatCapacity(1000)).toBe('1.000 KG')
-  })
-})
-
-describe('zoneNameFor', () => {
-  it('resolves the zone name from the map', () => {
-    const zonesById = new Map([['1', 'Microcentro']])
-    expect(zoneNameFor('1', zonesById)).toBe('Microcentro')
-  })
-
-  it('falls back to the raw zoneId when the map has no entry (zones still loading)', () => {
-    expect(zoneNameFor('9', new Map())).toBe('9')
   })
 })

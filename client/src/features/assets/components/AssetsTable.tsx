@@ -6,32 +6,30 @@ import {
   useReactTable
 } from '@tanstack/react-table'
 import { Table } from '@radix-ui/themes'
-import type { Vehicle } from '../../../shared/types/domain.types'
+import type { Asset } from '../../../shared/types/domain.types'
 import { useZonesQuery } from '../../../shared/services/useZonesQuery'
 import { zoneNameFor } from '../../../shared/utils/zoneNameFor'
 import { StatusBadge } from '../../../shared/components/StatusBadge'
-import { useFilteredVehicles } from '../hooks/useFilteredVehicles'
+import { useFilteredAssets } from '../hooks/useFilteredAssets'
 import {
-  formatCapacity,
-  vehicleStatusColorRole,
-  vehicleStatusLabel,
-  vehicleTypeLabel
-} from '../utils/vehicleFormat'
-import { VehicleRowActionsMenu } from './VehicleRowActionsMenu'
+  assetStatusColorRole,
+  assetStatusLabel,
+  assetTypeLabel,
+  formatCoordinate
+} from '../utils/assetFormat'
+import { AssetRowActionsMenu } from './AssetRowActionsMenu'
 
-const columnHelper = createColumnHelper<Vehicle>()
+const columnHelper = createColumnHelper<Asset>()
 
 /**
- * TanStack Table over the vehicles store, translating the mockup `<tbody>`
- * (docs/designs/03-vehicles-table.md) into dynamic rows.
- * See docs/feature/03-vehicles-table.md, "Decisiones propuestas" #1-#3.
- *
- * Reads from `useFilteredVehicles` (not `useVehiclesStore` directly) so the 5 filters of
- * `VehiclesFilterBar` apply without this component knowing how filtering works
- * (docs/feature/04-vehicles-filtertable.md, "Decisiones propuestas" #8).
+ * TanStack Table over the assets store, mirroring `VehiclesTable`
+ * (docs/feature/07-assets-page.md, "Decisiones propuestas" #4). Reads from
+ * `useFilteredAssets` (not `useAssetsStore` directly) so the 3 filters of
+ * `AssetsFilterBar` apply without this component knowing how filtering
+ * works, same pattern as `VehiclesTable`.
  */
-export function VehiclesTable(): JSX.Element {
-  const vehicles = useFilteredVehicles()
+export function AssetsTable(): JSX.Element {
+  const assets = useFilteredAssets()
   const { data: zones } = useZonesQuery()
 
   const zonesById = useMemo(() => {
@@ -44,17 +42,9 @@ export function VehiclesTable(): JSX.Element {
 
   const columns = useMemo(
     () => [
-      columnHelper.accessor('plate', {
-        header: 'Placa',
-        cell: (info) => <strong>{info.getValue()}</strong>
-      }),
       columnHelper.accessor('type', {
         header: 'Tipo',
-        cell: (info) => vehicleTypeLabel(info.getValue())
-      }),
-      columnHelper.accessor('capacity', {
-        header: 'Capacidad',
-        cell: (info) => formatCapacity(info.getValue())
+        cell: (info) => assetTypeLabel(info.getValue())
       }),
       columnHelper.accessor('status', {
         header: 'Estado',
@@ -62,8 +52,8 @@ export function VehiclesTable(): JSX.Element {
           const status = info.getValue()
           return (
             <StatusBadge
-              colorRole={vehicleStatusColorRole(status)}
-              label={vehicleStatusLabel(status)}
+              colorRole={assetStatusColorRole(status)}
+              label={assetStatusLabel(status)}
             />
           )
         }
@@ -72,20 +62,31 @@ export function VehiclesTable(): JSX.Element {
         header: 'Zona',
         cell: (info) => zoneNameFor(info.getValue(), zonesById)
       }),
+      columnHelper.accessor('address', {
+        header: 'Dirección'
+      }),
+      columnHelper.accessor('lat', {
+        header: 'Latitud',
+        cell: (info) => formatCoordinate(info.getValue())
+      }),
+      columnHelper.accessor('lng', {
+        header: 'Longitud',
+        cell: (info) => formatCoordinate(info.getValue())
+      }),
       columnHelper.display({
         id: 'actions',
         header: 'Acciones',
-        cell: (info) => <VehicleRowActionsMenu vehicle={info.row.original} />
+        cell: (info) => <AssetRowActionsMenu asset={info.row.original} />
       })
     ],
     [zonesById]
   )
 
   const table = useReactTable({
-    data: vehicles,
+    data: assets,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getRowId: (vehicle) => vehicle.id
+    getRowId: (asset) => asset.id
   })
 
   return (
@@ -106,7 +107,7 @@ export function VehiclesTable(): JSX.Element {
       </Table.Header>
       <Table.Body>
         {table.getRowModel().rows.map((row) => (
-          <Table.Row key={row.id} data-testid="vehicle-row">
+          <Table.Row key={row.id} data-testid="asset-row">
             {row.getVisibleCells().map((cell) => (
               <Table.Cell key={cell.id} align={cell.column.id === 'actions' ? 'right' : undefined}>
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}

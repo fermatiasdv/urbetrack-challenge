@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildVehicleStatusCards, formatPercentage } from './useVehicleStatusCards'
+import { buildVehicleStatusCards } from './useVehicleStatusCards'
+import { formatPercentage } from '../../../shared/utils/formatPercentage'
 import type { Vehicle } from '../../../shared/types/domain.types'
 
 function vehicle(id: string, status: Vehicle['status']): Vehicle {
