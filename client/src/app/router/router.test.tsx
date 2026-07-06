@@ -1,6 +1,7 @@
 import { act } from 'react'
 import { render, screen } from '@testing-library/react'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, expect, it } from 'vitest'
 import { routeTree } from './routes'
 import { router } from './router'
@@ -8,6 +9,21 @@ import { router } from './router'
 function createTestRouter(initialPath: string) {
   const history = createMemoryHistory({ initialEntries: [initialPath] })
   return createRouter({ routeTree, history })
+}
+
+/**
+ * `VehiclesPage` uses `@tanstack/react-query` (see
+ * docs/feature/02-vehicle-statuscard.md), same as the real app composition in
+ * `main.tsx` (`QueryClientProvider` above the router). Mirrors the pattern
+ * already used in `component-test/VehiclesTable.test.tsx`.
+ */
+function renderRouter(testRouter: ReturnType<typeof createTestRouter>) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={testRouter} />
+    </QueryClientProvider>
+  )
 }
 
 const SCREENS: readonly { path: string; legend: string }[] = [
@@ -32,14 +48,14 @@ describe('router', () => {
 describe('router integration', () => {
   it('renders the Dashboard legend on the initial route', async () => {
     const testRouter = createTestRouter('/')
-    render(<RouterProvider router={testRouter} />)
+    renderRouter(testRouter)
 
     await screen.findByRole('heading', { name: 'Dashboard' })
   })
 
   it('keeps the sidebar mounted (same DOM node) while navigating between screens', async () => {
     const testRouter = createTestRouter('/')
-    render(<RouterProvider router={testRouter} />)
+    renderRouter(testRouter)
 
     await screen.findByRole('heading', { name: 'Dashboard' })
     const sidebar = screen.getByRole('navigation')
