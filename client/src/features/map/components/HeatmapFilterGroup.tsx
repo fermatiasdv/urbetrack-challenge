@@ -1,5 +1,6 @@
 import type { JSX } from 'react'
 import { Button, Checkbox, CheckboxGroup, Flex, Popover, Text } from '@radix-ui/themes'
+import { checkboxItem, dropdownMenu, label as labelStyle, select } from './mapSidebarPanel.styles'
 
 interface HeatmapFilterGroupProps<T extends string> {
   label: string
@@ -37,36 +38,34 @@ export function HeatmapFilterGroup<T extends string>({
 
   return (
     <Flex direction="column" gap="1">
-      <Text size="2" color="gray">
+      <Text as="span" style={labelStyle}>
         {label}
       </Text>
       <Popover.Root>
         <Popover.Trigger>
-          <Button variant="surface" color="gray" aria-label={triggerAriaLabel}>
+          <Button variant="surface" color="gray" aria-label={triggerAriaLabel} style={select}>
             {triggerLabel(selected.length, options.length)}
           </Button>
         </Popover.Trigger>
-        <Popover.Content>
-          <Flex direction="column" gap="2">
-            <Text as="label" size="2">
-              <Flex gap="2" align="center">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={(checked) =>
-                    onChange(checked ? options.map((option) => option.value) : [])
-                  }
-                />
-                Todos
-              </Flex>
-            </Text>
-            <CheckboxGroup.Root value={selected} onValueChange={(value) => onChange(value as T[])}>
-              {options.map((option) => (
-                <CheckboxGroup.Item key={option.value} value={option.value}>
-                  {option.label}
-                </CheckboxGroup.Item>
-              ))}
-            </CheckboxGroup.Root>
-          </Flex>
+        <Popover.Content style={dropdownMenu}>
+          <Text as="label" size="2">
+            <Flex gap="2" align="center" style={checkboxItem}>
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={(checked) =>
+                  onChange(checked ? options.map((option) => option.value) : [])
+                }
+              />
+              Todos
+            </Flex>
+          </Text>
+          <CheckboxGroup.Root value={selected} onValueChange={(value) => onChange(value as T[])}>
+            {options.map((option) => (
+              <CheckboxGroup.Item key={option.value} value={option.value} style={checkboxItem}>
+                {option.label}
+              </CheckboxGroup.Item>
+            ))}
+          </CheckboxGroup.Root>
         </Popover.Content>
       </Popover.Root>
     </Flex>

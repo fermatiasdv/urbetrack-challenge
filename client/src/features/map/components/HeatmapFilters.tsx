@@ -2,6 +2,7 @@ import type { JSX } from 'react'
 import { Flex } from '@radix-ui/themes'
 import { useMapStore } from '../store/useMapStore'
 import { HeatmapFilterGroup } from './HeatmapFilterGroup'
+import { filters } from './mapSidebarPanel.styles'
 import type { IncidentStatus, IncidentType } from '../../../shared/types/domain.types'
 
 const STATUS_OPTIONS: { value: IncidentStatus; label: string }[] = [
@@ -29,7 +30,7 @@ export function HeatmapFilters(): JSX.Element {
   const setHeatmapFilters = useMapStore((state) => state.setHeatmapFilters)
 
   return (
-    <Flex gap="4" align="end" data-testid="heatmap-filters">
+    <Flex style={filters} data-testid="heatmap-filters">
       <HeatmapFilterGroup
         label="Estado"
         triggerAriaLabel="Estado del heatmap"

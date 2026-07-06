@@ -18,21 +18,6 @@ export const mapContainerStyle: CSSProperties = {
   borderRadius: '8px'
 }
 
-export const heatmapSidebarStyle: CSSProperties = {
-  width: '220px',
-  flexShrink: 0
-}
-
-export function legendSwatchStyle(color: string): CSSProperties {
-  return {
-    display: 'inline-block',
-    width: '12px',
-    height: '12px',
-    borderRadius: '2px',
-    background: color
-  }
-}
-
 /**
  * Full-width container for `AvailabilityAlert`
  * (docs/feature/12-availability-alert.md, restricción 2 "ancho completo").

@@ -16,4 +16,18 @@ describe('AssetLegend', () => {
     expect(screen.getByText('Dañado')).toBeInTheDocument()
     expect(screen.getByText('Fuera de servicio')).toBeInTheDocument()
   })
+
+  it('renders children inside the same section, below the legend', () => {
+    render(
+      <Theme>
+        <AssetLegend>
+          <div>Filtros anidados</div>
+        </AssetLegend>
+      </Theme>
+    )
+
+    expect(screen.getByTestId('asset-legend')).toContainElement(
+      screen.getByText('Filtros anidados')
+    )
+  })
 })

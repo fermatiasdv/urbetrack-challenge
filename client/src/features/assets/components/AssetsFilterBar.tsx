@@ -6,7 +6,7 @@ import {
   ASSET_STATUS_FILTER_OPTIONS,
   ASSET_TYPE_FILTER_OPTIONS
 } from '../constants/assetFilterOptions'
-import { filterBarContainerStyle, filterFieldLabelStyle } from './assetsFilterBar.styles'
+import { field, filterContainer, label, resetButton, select } from './assetsFilterBar.styles'
 
 /** Trigger label for the Zona popover, same helper as `VehiclesFilterBar`. */
 function zoneFilterLabel(zoneIds: string[], zonesById: Map<string, string>): string {
@@ -39,13 +39,13 @@ export function AssetsFilterBar(): JSX.Element {
   const zonesById = new Map((zones ?? []).map((zone) => [zone.id, zone.name]))
 
   return (
-    <Flex wrap="wrap" gap="4" align="end" style={filterBarContainerStyle} mb="4">
-      <Flex direction="column" style={{ width: '192px' }}>
-        <Text as="label" style={filterFieldLabelStyle}>
+    <Flex wrap="wrap" style={filterContainer} mb="4">
+      <Flex direction="column" style={field}>
+        <Text as="label" style={label}>
           Tipo
         </Text>
         <Select.Root value={type} onValueChange={setType}>
-          <Select.Trigger aria-label="Tipo" />
+          <Select.Trigger aria-label="Tipo" style={select} />
           <Select.Content>
             {ASSET_TYPE_FILTER_OPTIONS.map((option) => (
               <Select.Item key={option.value} value={option.value}>
@@ -56,12 +56,12 @@ export function AssetsFilterBar(): JSX.Element {
         </Select.Root>
       </Flex>
 
-      <Flex direction="column" style={{ width: '192px' }}>
-        <Text as="label" style={filterFieldLabelStyle}>
+      <Flex direction="column" style={field}>
+        <Text as="label" style={label}>
           Estado
         </Text>
         <Select.Root value={status} onValueChange={setStatus}>
-          <Select.Trigger aria-label="Estado" />
+          <Select.Trigger aria-label="Estado" style={select} />
           <Select.Content>
             {ASSET_STATUS_FILTER_OPTIONS.map((option) => (
               <Select.Item key={option.value} value={option.value}>
@@ -72,13 +72,13 @@ export function AssetsFilterBar(): JSX.Element {
         </Select.Root>
       </Flex>
 
-      <Flex direction="column" style={{ width: '192px' }}>
-        <Text as="label" style={filterFieldLabelStyle}>
+      <Flex direction="column" style={field}>
+        <Text as="label" style={label}>
           Zona
         </Text>
         <Popover.Root>
           <Popover.Trigger>
-            <Button variant="surface" color="gray" aria-label="Zona">
+            <Button variant="surface" color="gray" aria-label="Zona" style={select}>
               {zoneFilterLabel(zoneIds, zonesById)}
             </Button>
           </Popover.Trigger>
@@ -94,7 +94,7 @@ export function AssetsFilterBar(): JSX.Element {
         </Popover.Root>
       </Flex>
 
-      <Button variant="soft" color="gray" onClick={reset}>
+      <Button variant="soft" color="gray" onClick={reset} style={resetButton}>
         Restablecer
       </Button>
     </Flex>

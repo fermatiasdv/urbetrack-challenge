@@ -2,6 +2,7 @@ import type { CSSProperties, JSX } from 'react'
 import { Card, Flex, Text } from '@radix-ui/themes'
 import type { LucideIcon } from 'lucide-react'
 import {
+  cardContainerStyle,
   cardLabelStyle,
   cardSecondaryTextStyle,
   cardValueStyle,
@@ -42,7 +43,7 @@ export function StatusSummaryCard({ data }: StatusSummaryCardProps): JSX.Element
   }
 
   return (
-    <Card variant="surface" size="3">
+    <Card variant="ghost" style={cardContainerStyle}>
       <Flex justify="between" align="start" mb="2">
         <Flex
           align="center"

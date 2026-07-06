@@ -1,11 +1,10 @@
 import { Link, useMatchRoute } from '@tanstack/react-router'
-import { Box, Flex, Heading, Separator, Text, Button } from '@radix-ui/themes'
-import { AlertTriangle, BellPlus, Map, Package, Truck, type LucideIcon } from 'lucide-react'
+import { Box, Flex, Heading, Text, Button } from '@radix-ui/themes'
+import { AlertTriangle, Map, Package, Truck, type LucideIcon } from 'lucide-react'
 import {
   navItemActiveStyle,
   navItemInactiveStyle,
   navItemLabelStyle,
-  reportIncidentButtonStyle,
   sidebarContainerStyle,
   sidebarLogoBoxStyle,
   sidebarSubtitleStyle,
@@ -68,9 +67,9 @@ export function Sidebar(): JSX.Element {
           </Flex>
         </Box>
 
-        <Box asChild flexGrow="1" overflowY="auto">
+        <Box asChild flexGrow="1">
           <nav>
-            <Flex direction="column" gap="1">
+            <Flex direction="column" gap="3">
               {NAV_ITEMS.map((item) => {
                 const isActive = matchRoute({ to: item.to })
                 const Icon = item.icon
@@ -91,14 +90,6 @@ export function Sidebar(): JSX.Element {
               })}
             </Flex>
           </nav>
-        </Box>
-
-        <Box mt="auto" pt="4">
-          <Separator size="4" mb="3" />
-          <Button style={reportIncidentButtonStyle} radius="large" size="3">
-            <BellPlus aria-hidden size={18} />
-            <Text style={navItemLabelStyle}>Reportar incidente</Text>
-          </Button>
         </Box>
       </Flex>
     </Box>

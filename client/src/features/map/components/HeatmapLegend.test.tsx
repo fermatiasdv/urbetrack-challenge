@@ -16,16 +16,14 @@ describe('HeatmapLegend', () => {
     expect(screen.getByText('Resuelto')).toBeInTheDocument()
   })
 
-  it('shows the 4 asset statuses with their labels', () => {
+  it('does not repeat the asset statuses (already shown in AssetLegend)', () => {
     render(
       <Theme>
         <HeatmapLegend />
       </Theme>
     )
 
-    expect(screen.getByText('OK')).toBeInTheDocument()
-    expect(screen.getByText('Completo')).toBeInTheDocument()
-    expect(screen.getByText('Dañado')).toBeInTheDocument()
-    expect(screen.getByText('Fuera de servicio')).toBeInTheDocument()
+    expect(screen.queryByText('Completo')).not.toBeInTheDocument()
+    expect(screen.queryByText('Fuera de servicio')).not.toBeInTheDocument()
   })
 })

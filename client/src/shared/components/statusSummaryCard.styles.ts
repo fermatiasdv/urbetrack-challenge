@@ -25,6 +25,20 @@ export type StatusCardColorRole = 'primary' | 'success' | 'tertiary' | 'error' |
 /** Secondary line color: any card color role, plus `'muted'` (the default gray). */
 export type StatusCardSecondaryColorRole = 'muted' | StatusCardColorRole
 
+/**
+ * "Bento" card container look (docs/specs/fix-status-cards-card-style.md): gradient
+ * background, translucent border, blur, 24px radius and a two-layer shadow. Replaces
+ * Radix's own `variant="surface"` card chrome.
+ */
+export const cardContainerStyle: CSSProperties = {
+  background: 'linear-gradient(180deg, #FFFFFF 0%, #FCFCFD 100%)',
+  border: '1px solid rgba(255,255,255,.6)',
+  backdropFilter: 'blur(8px)',
+  borderRadius: '24px',
+  padding: '24px',
+  boxShadow: '0 1px 2px rgba(0,0,0,.04), 0 12px 32px rgba(0,0,0,.05)'
+}
+
 /** Big number per card (`text-3xl` in the mockup — approximated to `headlineLg`). */
 export const cardValueStyle: CSSProperties = {
   ...designTokens.typography.headlineLg,

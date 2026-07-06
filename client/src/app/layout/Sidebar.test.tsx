@@ -34,12 +34,12 @@ describe('Sidebar', () => {
     expect(screen.getByRole('link', { name: /Incidentes/ })).toHaveAttribute('href', '/incidentes')
   })
 
-  it('renders the "Reportar incidente" footer button', async () => {
+  it('does not render a "Reportar incidente" footer button', async () => {
     renderSidebar()
 
     await screen.findByText('Logistics Manager')
 
-    expect(screen.getByRole('button', { name: /Reportar incidente/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Reportar incidente/ })).not.toBeInTheDocument()
   })
 
   it('highlights the active route link with the active nav styles', async () => {

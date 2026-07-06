@@ -70,16 +70,3 @@ export const navItemActiveStyle: CSSProperties = {
   transform: 'translateX(0.25rem)',
   justifyContent: 'flex-start'
 }
-
-/**
- * Botón "Reportar incidente" (mockup: `w-full bg-tertiary text-on-tertiary font-bold`). `width:
- * '100%'` es la única propiedad de layout que se resuelve acá porque `Button` de Radix no expone
- * una prop nativa de ancho completo (ver spec, "Gaps a resolver" → nota Card vs. Box).
- */
-export const reportIncidentButtonStyle: CSSProperties = {
-  width: '100%',
-  backgroundColor: designTokens.colors.tertiary,
-  color: designTokens.colors.onTertiary,
-  fontWeight: 700,
-  justifyContent: 'flex-start'
-}

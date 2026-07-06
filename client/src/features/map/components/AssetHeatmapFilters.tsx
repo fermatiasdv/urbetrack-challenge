@@ -3,6 +3,7 @@ import { Flex } from '@radix-ui/themes'
 import { useMapStore } from '../store/useMapStore'
 import { HeatmapFilterGroup } from './HeatmapFilterGroup'
 import { ASSET_STATUS_LEGEND_LABELS, ASSET_TYPE_LEGEND_LABELS } from '../utils/assetMarkerColor'
+import { filters } from './mapSidebarPanel.styles'
 import type { AssetStatus, AssetType } from '../../../shared/types/domain.types'
 
 const STATUS_OPTIONS: { value: AssetStatus; label: string }[] = [
@@ -28,7 +29,7 @@ export function AssetHeatmapFilters(): JSX.Element {
   const setAssetHeatmapFilters = useMapStore((state) => state.setAssetHeatmapFilters)
 
   return (
-    <Flex gap="4" align="end" data-testid="asset-heatmap-filters">
+    <Flex style={filters} data-testid="asset-heatmap-filters">
       <HeatmapFilterGroup
         label="Estado de activo"
         triggerAriaLabel="Estado de activo del heatmap"
