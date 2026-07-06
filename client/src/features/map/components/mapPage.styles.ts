@@ -32,3 +32,11 @@ export function heatmapLegendSwatchStyle(color: string): CSSProperties {
     background: color
   }
 }
+
+/**
+ * Full-width container for `AvailabilityAlert`
+ * (docs/feature/12-availability-alert.md, restricción 2 "ancho completo").
+ */
+export const availabilityAlertStyle: CSSProperties = {
+  width: '100%'
+}
