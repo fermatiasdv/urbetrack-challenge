@@ -29,7 +29,13 @@ export function VehicleStatusCard({ data }: VehicleStatusCardProps): JSX.Element
   return (
     <Card variant="surface" size="3">
       <Flex justify="between" align="start" mb="2">
-        <Flex align="center" justify="center" width="32px" height="32px" style={iconBoxStyleFor(data.key)}>
+        <Flex
+          align="center"
+          justify="center"
+          width="32px"
+          height="32px"
+          style={iconBoxStyleFor(data.key)}
+        >
           <Icon size={18} aria-hidden />
         </Flex>
         <Text as="span" style={cardLabelStyle}>
@@ -40,7 +46,9 @@ export function VehicleStatusCard({ data }: VehicleStatusCardProps): JSX.Element
         {data.value}
       </Text>
       <Flex align="center" gap="1" mt="2">
-        {SecondaryIcon ? <SecondaryIcon size={14} aria-hidden color={secondaryTextStyle.color} /> : null}
+        {SecondaryIcon ? (
+          <SecondaryIcon size={14} aria-hidden color={secondaryTextStyle.color} />
+        ) : null}
         <Text as="span" style={secondaryTextStyle}>
           {data.secondaryText}
         </Text>

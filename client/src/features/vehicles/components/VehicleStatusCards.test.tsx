@@ -36,7 +36,7 @@ describe('VehicleStatusCards', () => {
     expect(screen.getByText('2')).toBeInTheDocument()
     expect(screen.getByText(/50% del total de vehículos/)).toBeInTheDocument()
 
-    expect(screen.getByText('En mantenimiento')).toBeInTheDocument();
+    expect(screen.getByText('En mantenimiento')).toBeInTheDocument()
     expect(screen.getByText(/25% agendados para reparar/)).toBeInTheDocument()
 
     expect(screen.getByText('Fuera de servicio')).toBeInTheDocument()
