@@ -232,3 +232,17 @@ En caso de error al guardar, deberá mostrarse el mensaje: "No fue posible actua
 En caso de éxito deberá mostrarse el mensaje: "Vehículo actualizado correctamente."
 
 Los filtros, tablas, mapa, mapas de calor y modales deberán mantenerse sincronizados utilizando una única fuente de información compartida.
+
+---
+
+### Ampliación de alcance (2026-07-05).
+
+Se define un cambio de alcance sobre lo descripto arriba. Su detalle, decisiones y specs derivados están en el spec paraguas `docs/chore/03-navigation-shell-router.md`; una vez analizado por el LLM, esta ampliación se refleja también en `docs/verified-scope.md`. Las funcionalidades extendidas son:
+
+1. **Barra lateral de navegación.** Tendrá: un ícono de un camión (logo, importado desde una librería de íconos) seguido de la leyenda URBETRACK, y luego la lista de enlaces: Dashboard, Mapa, Activos, Vehículos e Incidentes. Cada una de estas opciones irá a la pantalla correspondiente. La barra de navegación no se re-renderizará: solo se re-renderiza el contenido de la página (es un layout persistente).
+
+2. **Pantallas placeholder.** Por ahora, cada una de estas pantallas contendrá únicamente la leyenda que le corresponde a su enlace (por ejemplo, Dashboard solo tendrá escrito "Dashboard"; Vehículos, "Vehículos"; etc.). El desarrollo funcional de cada pantalla se hará luego, en features aparte.
+
+3. **Instalación de TanStack Router.** Se extiende el spec que declara las instalaciones del cliente para agregar TanStack Router (configuración code-based, fuertemente tipada). Se agrega además la librería de íconos `lucide-react` para el logo del camión y futuros íconos de la sidebar.
+
+4. **Estado global como fuente única (objetivo).** Los datos se persisten en el estado global. La dirección del cambio es que, más adelante, cada pantalla que no sea el Dashboard tenga su ABMC correspondiente, y que las modificaciones "le peguen" al estado suscripto y se reflejen en tiempo real en las diferentes vistas (mapa, tablas, modales). En este cambio esto queda documentado como objetivo; el ABMC concreto se especifica e implementa en specs de feature posteriores. Nota: el backend mock no expone `PUT`/`PATCH`/`DELETE`, por lo que el ABMC vivirá en el estado global del frontend (mismo patrón que ya usa la edición de vehículos, sin llamada de escritura al backend).

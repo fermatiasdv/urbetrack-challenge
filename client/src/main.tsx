@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Theme } from '@radix-ui/themes'
 import '@radix-ui/themes/styles.css'
-import App from './App'
+import { RouterProvider } from '@tanstack/react-router'
+import { router } from './app/router/router'
 
 const queryClient = new QueryClient()
 
@@ -16,7 +17,7 @@ createRoot(rootElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <Theme>
-        <App />
+        <RouterProvider router={router} />
       </Theme>
     </QueryClientProvider>
   </StrictMode>
