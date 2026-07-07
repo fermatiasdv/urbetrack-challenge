@@ -2,8 +2,6 @@
 
 Sistema de gestión de higiene urbana: mapa interactivo con activos (contenedores, cestos, bancos), incidentes y vehículos de recolección, distribuidos en 5 zonas de CABA (Microcentro, Palermo, Recoleta, Belgrano, Caballito). Incluye mapa de calor de incidentes, tablas filtrables con paginación, modal de detalle/edición de vehículos y un motor de asignación automática de vehículos a incidentes según reglas de compatibilidad, zona y capacidad.
 
-🔗 **Demo desplegada:** https://fermatiasdv.github.io/
-
 ## Stack
 
 **Frontend** (`client/`): React 18 + TypeScript, Vite, Zustand (estado global), TanStack Query + TanStack Router + TanStack Table, Radix UI Themes, React-Leaflet + leaflet.heat (mapa y mapa de calor), Zod (validación), Vitest + Testing Library (tests).
